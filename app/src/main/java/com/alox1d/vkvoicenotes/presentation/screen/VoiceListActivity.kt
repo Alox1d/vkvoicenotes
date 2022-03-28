@@ -6,7 +6,6 @@ import android.media.MediaRecorder
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.annotation.NonNull
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,7 +18,6 @@ import com.alox1d.vkvoicenotes.internal.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE
 import com.alox1d.vkvoicenotes.presentation.adapter.VoiceNotesAdapter
 import com.alox1d.vkvoicenotes.presentation.adapter.OnVoiceListAdapterListener
 import com.alox1d.vkvoicenotes.presentation.viewmodel.VoiceListViewModel
-import com.android.player.AudioPlayerViewModel
 import com.android.player.BaseSongPlayerActivity
 import com.android.player.model.AVoiceNote
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -35,10 +33,14 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
     lateinit var mAdapterVoice: VoiceNotesAdapter
     private lateinit var binding: ActivityMainBinding
     private val viewModel: VoiceListViewModel by viewModels()
+
     private lateinit var fullFilePath: String;
     private lateinit var filePath: String;
-    private lateinit var file: File
+    private lateinit var voiceFile: File
+    private lateinit var voicesDirectoryPath: String
+    private lateinit var voicesDirectory: File
     private var date: Long = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -46,67 +48,48 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         setContentView(view)
 
         App.daggerAppComponent.inject(viewModel)
-
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         setUpRecyclerView()
-
         observeLiveData()
+        setUpTitle()
+        setUpPermissions()
+        setUpListeners()
+        setUpNotesDirectory()
 
-        supportActionBar?.title = getString(R.string.notes) // под каждую ли переменную заводить LiveData?
+    }
 
-        if (isReadPhoneStatePermissionGranted())
-//            openMusicList()
-        else requestPermissions(
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO),
-            REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE
-        )
-        val extPath = getExternalFilesDir(null)?.absolutePath + File.separator + "VoiceNotes" + File.separator
-        val ext = File(extPath)
-            if (!ext.exists()) {
-                ext.mkdirs()
-            }
-
-
-        binding.fab.setOnClickListener {
-           viewModel.recording.postValue(!(viewModel.recording.value)!!)
-        }
-        viewModel.recording.observe(this) {
-            if (it) {
-                if (isRecordPermissionGranted()) {
-                    date = Calendar.getInstance().timeInMillis
-                    filePath = "Запись " + SimpleDateFormat("dd.MM.yy HH:mm:ss").format(date) +".aac"
-                    fullFilePath = extPath+ filePath
-                    file = File(ext, filePath)
-                    startRecording(fullFilePath)
-
-                } else {
-                    ActivityCompat.requestPermissions(
-                        this,
-                        arrayOf(Manifest.permission.RECORD_AUDIO),
-                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE + 1
-                    );
-                }
-            } else {
-                if (recorder!=null){
-                    stopRecording()
-//                    val uri: Uri = Uri.parse(file.absolutePath)
-//                    val mmr = MediaMetadataRetriever()
-//                    mmr.setDataSource(application, uri)
-//                    val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-//                    val millSecond = durationStr!!
-                    val note = VoiceNote(
-                        name = filePath,
-                        path = fullFilePath,
-                        duration = "",
-                        date = date
-                    )
-                    viewModel.saveSongData(note)
-                }
-
-            }
+    private fun setUpNotesDirectory() {
+        voicesDirectoryPath =
+            getExternalFilesDir(null)?.absolutePath + File.separator + "VoiceNotes" + File.separator
+        voicesDirectory = File(voicesDirectoryPath)
+        if (!voicesDirectory.exists()) {
+            voicesDirectory.mkdirs()
         }
     }
+
+    private fun setUpListeners() {
+        binding.fab.setOnClickListener {
+            viewModel.recording.postValue(!(viewModel.recording.value)!!)
+        }
+    }
+
+    private fun setUpTitle() {
+        supportActionBar?.title =
+            getString(R.string.notes) // под каждую ли переменную заводить LiveData?
+    }
+
+    private fun setUpPermissions() {
+        if (!isReadPhoneStatePermissionGranted())
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.RECORD_AUDIO
+                ),
+                REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE
+            )
+    }
+
     protected var recorder: MediaRecorder? = null
 
     private fun startRecording(fileName: String) {
@@ -198,9 +181,91 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         audioPlayerViewModel.isPlayData.observe(this) {
             mAdapterVoice.playingViewHolder?.itemBinding?.playButton?.setImageResource(if (it) R.drawable.ic_pause_vector else R.drawable.ic_play_vector)
         }
+        viewModel.recording.observe(this) {
+            if (it) {
+                if (isRecordPermissionGranted()) {
+                    date = Calendar.getInstance().timeInMillis
+                    filePath = "Запись " + SimpleDateFormat("dd.MM.yy HH:mm:ss").format(date) +".aac"
+                    fullFilePath = voicesDirectoryPath+ filePath
+                    voiceFile = File(voicesDirectory, filePath)
+                    startRecording(fullFilePath)
+
+                } else {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.RECORD_AUDIO),
+                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE + 1
+                    );
+                }
+            } else {
+                if (recorder!=null){
+                    stopRecording()
+//                    val uri: Uri = Uri.parse(file.absolutePath)
+//                    val mmr = MediaMetadataRetriever()
+//                    mmr.setDataSource(application, uri)
+//                    val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+//                    val millSecond = durationStr!!
+                    val note = VoiceNote(
+                        name = filePath,
+                        path = fullFilePath,
+                        duration = "",
+                        date = date
+                    )
+                    viewModel.saveSongData(note)
+                }
+
+            }
+        }
+
 //        observeInProgress()
 //        observeIsError()
 //        observeAudious()
+    }
+    override fun playNote(note: VoiceNote, voiceNotes: ArrayList<VoiceNote>) {
+
+        viewModel.onPlayClicked()
+        play(viewModel.playlistData.value as MutableList<AVoiceNote>, note)
+//        AudioPlayerActivity.start(this, note, voiceNotes)
+    }
+    override fun removeNoteItem(note: VoiceNote) {
+        showRemoveSongItemConfirmDialog(note)
+    }
+
+    private fun showRemoveSongItemConfirmDialog(note: VoiceNote) {
+        // setup the alert builder
+        MaterialAlertDialogBuilder(this,
+            R.style.NotesThemeOverlay_MaterialComponents_MaterialAlertDialog)
+            .setMessage(getString(R.string.sure_remove))
+            // add a button
+            .apply {
+                setPositiveButton(R.string.yes) { _, _ ->
+                    removeAudioFromList(note)
+                }
+                setNegativeButton(R.string.no) { _, _ ->
+                    // User cancelled the dialog
+                }
+            }
+            // create and show the alert dialog
+            .show()
+    }
+    private fun removeAudioFromList(note: VoiceNote) {
+        audioPlayerViewModel.stop()
+        viewModel.removeItemFromList(note)
+    }
+    private fun isReadPhoneStatePermissionGranted(): Boolean {
+        val firstPermissionResult = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        )
+        return firstPermissionResult == PackageManager.PERMISSION_GRANTED
+    }
+    private fun isRecordPermissionGranted(): Boolean {
+
+        val firstPermissionResult = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO
+        )
+        return firstPermissionResult == PackageManager.PERMISSION_GRANTED
     }
 //    private fun observeInProgress() {
 //        viewModel.repository.isInProgress.observe(this) { isLoading ->
@@ -252,49 +317,4 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 //        binding.fetchProgress.visibility = View.GONE
 //    }
 
-    override fun removeNoteItem(note: VoiceNote) {
-        showRemoveSongItemConfirmDialog(note)
-    }
-    override fun playNote(note: VoiceNote, voiceNotes: ArrayList<VoiceNote>) {
-
-        viewModel.onPlayClicked()
-        play(viewModel.playlistData.value as MutableList<AVoiceNote>, note)
-//        AudioPlayerActivity.start(this, note, voiceNotes)
-    }
-    private fun showRemoveSongItemConfirmDialog(note: VoiceNote) {
-        // setup the alert builder
-        MaterialAlertDialogBuilder(this,
-            R.style.NotesThemeOverlay_MaterialComponents_MaterialAlertDialog)
-            .setMessage(getString(R.string.sure_remove))
-            // add a button
-            .apply {
-                setPositiveButton(R.string.yes) { _, _ ->
-                    removeAudioFromList(note)
-                }
-                setNegativeButton(R.string.no) { _, _ ->
-                    // User cancelled the dialog
-                }
-            }
-            // create and show the alert dialog
-            .show()
-    }
-    private fun removeAudioFromList(note: VoiceNote) {
-        audioPlayerViewModel.stop()
-        viewModel.removeItemFromList(note)
-    }
-    private fun isReadPhoneStatePermissionGranted(): Boolean {
-        val firstPermissionResult = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
-        return firstPermissionResult == PackageManager.PERMISSION_GRANTED
-    }
-    private fun isRecordPermissionGranted(): Boolean {
-
-        val firstPermissionResult = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.RECORD_AUDIO
-        )
-        return firstPermissionResult == PackageManager.PERMISSION_GRANTED
-    }
 }
