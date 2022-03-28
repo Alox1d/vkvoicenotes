@@ -1,0 +1,41 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.GiphyAPIMVVMRxRoomKotlinDagger" parent="Theme.MaterialComponents.DayNight">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/white</item>
+        <item name="colorOnPrimary">@color/vk</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/vk</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/vk</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- Customize your theme here. -->
+        <item name="android:actionBarStyle">@style/MyActionBarStyle</item>
+    </style>
+    <style name="MyActionBarStyle" parent="Theme.MaterialComponents.DayNight">
+        <item name="android:titleTextStyle">@style/MyActionBarTitleTextStyle</item>
+
+
+    </style>
+
+    <style name="MyActionBarTitleTextStyle" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <!-- Alert Dialog -->
+    <style name="NotesThemeOverlay.MaterialComponents.MaterialAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/PositiveButtonStyle</item>
+    </style>
+
+
+    <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/vk</item>
+    </style>
+
+
+</resources>
