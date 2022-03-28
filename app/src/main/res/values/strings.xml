@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">VK Voice Notes</string>
+    <string name="notes">Ваши заметки</string>
+    <string name="sure_remove">Вы действительно хотите удалить запись?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="you_denied_permission">Вы оклонили разрешение</string>
+</resources>

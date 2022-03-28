@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Projects/VKAudioNotes/app/src/main/res/drawable-v24/ic_baseline_keyboard_voice_24.xml" value="0.2455" />
+        <entry key="..\:/Projects/VKAudioNotes/app/src/main/res/drawable-v24/ic_baseline_keyboard_voice_blue_24.xml" value="0.2455" />
+        <entry key="..\:/Projects/VKAudioNotes/app/src/main/res/drawable-v24/ic_pause_vector.xml" value="0.2665" />
+        <entry key="..\:/Projects/VKAudioNotes/app/src/main/res/drawable/ic_add_circle_white_24dp.xml" value="0.121" />
+        <entry key="..\:/Projects/VKAudioNotes/app/src/main/res/drawable/ic_baseline_keyboard_voice_24.xml" value="0.2665" />
+        <entry key="..\:/Projects/VKAudioNotes/app/src/main/res/layout/activity_main.xml" value="0.13958333333333334" />
+        <entry key="..\:/Projects/VKAudioNotes/app/src/main/res/layout/item_recycler.xml" value="0.17604166666666668" />
+        <entry key="..\:/Projects/VKAudioNotes/player/src/main/res/layout/player_collapsed_notification.xml" value="0.5" />
+        <entry key="..\:/Projects/VKAudioNotes/player/src/main/res/layout/player_expanded_notification.xml" value="0.75" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
