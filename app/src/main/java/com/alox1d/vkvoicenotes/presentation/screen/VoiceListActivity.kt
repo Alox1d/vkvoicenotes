@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.annotation.NonNull
@@ -143,6 +144,9 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                     voiceFile.renameTo(newFile)
                     viewModel.isNameSet.value = true
                     dialog.dismiss()
+                } else {
+                    viewModel.isNameSet.value = true
+                    dialog.dismiss()
                 }
             }
             dialog.show()
@@ -220,7 +224,14 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                     voiceFilePath = "Запись " + SimpleDateFormat("dd.MM.yy HH:mm:ss").format(date) +".aac"
                     fullVoiceFilePath = voicesDirectoryPath+ voiceFilePath
                     voiceFile = File(voicesDirectory, voiceFilePath)
+                    val snack = Snackbar.make(binding.root,"НАЧАТА ЗАПИСЬ",Snackbar.LENGTH_LONG)
+                    snack.setAction("ОК", View.OnClickListener {
+                        snack.dismiss()
+                    })
+                    snack.show()
+                    binding.fab.animate().setDuration(200).rotation(180f)
                     startRecording(fullVoiceFilePath)
+
 
                 } else {
                     ActivityCompat.requestPermissions(
@@ -231,6 +242,7 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                 }
             } else {
                 if (recorder!=null){
+                    binding.fab.animate().setDuration(200).rotation(0f)
                     stopRecording()
 //                    val uri: Uri = Uri.parse(file.absolutePath)
 //                    val mmr = MediaMetadataRetriever()

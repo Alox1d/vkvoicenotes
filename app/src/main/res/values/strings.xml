@@ -4,5 +4,5 @@
     <string name="sure_remove">Вы действительно хотите удалить запись?</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
-    <string name="you_denied_permission">Вы оклонили разрешение</string>
+    <string name="you_denied_permission">Вы отклонили разрешение</string>
 </resources>
