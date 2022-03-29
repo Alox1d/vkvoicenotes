@@ -44,6 +44,7 @@ class VoiceListViewModel (
 
     val playlistData = MutableLiveData<List<VoiceNote>>()
     var recording = MutableLiveData(false)
+    var isNameSet = MutableLiveData(false)
 
     fun saveSongData(note: VoiceNote) {
         saveAudioDataUseCase.saveNoteItem(note)

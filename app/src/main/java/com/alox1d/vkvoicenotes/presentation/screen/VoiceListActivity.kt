@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Bundle
+import android.widget.Button
 import androidx.activity.viewModels
 import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatDelegate
@@ -14,9 +15,10 @@ import com.alox1d.vkvoicenotes.App
 import com.alox1d.vkvoicenotes.R
 import com.alox1d.vkvoicenotes.data.model.VoiceNote
 import com.alox1d.vkvoicenotes.databinding.ActivityMainBinding
+import com.alox1d.vkvoicenotes.databinding.DialogSetFileNameBinding
 import com.alox1d.vkvoicenotes.internal.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE
-import com.alox1d.vkvoicenotes.presentation.adapter.VoiceNotesAdapter
 import com.alox1d.vkvoicenotes.presentation.adapter.OnVoiceListAdapterListener
+import com.alox1d.vkvoicenotes.presentation.adapter.VoiceNotesAdapter
 import com.alox1d.vkvoicenotes.presentation.viewmodel.VoiceListViewModel
 import com.android.player.BaseSongPlayerActivity
 import com.android.player.model.AVoiceNote
@@ -34,8 +36,8 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: VoiceListViewModel by viewModels()
 
-    private lateinit var fullFilePath: String;
-    private lateinit var filePath: String;
+    private lateinit var fullVoiceFilePath: String;
+    private lateinit var voiceFilePath: String;
     private lateinit var voiceFile: File
     private lateinit var voicesDirectoryPath: String
     private lateinit var voicesDirectory: File
@@ -113,9 +115,39 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
     private fun stopRecording(): Boolean {
         // stop recording and free up resources
         recorder?.let {
+
             recorder!!.stop()
             recorder!!.release()
             recorder = null
+            val bindAlert  = DialogSetFileNameBinding.inflate(layoutInflater)
+            val userInput = bindAlert.editTextDialogUserInput
+            val cancel: Button = bindAlert.saveCancel
+            val ok: Button = bindAlert.saveOk
+
+            val builder =
+            MaterialAlertDialogBuilder(this,
+                R.style.NotesThemeOverlay_MaterialComponents_MaterialAlertDialog)
+            // set prompts.xml to alertdialog builder
+            builder.setView(bindAlert.root)
+            builder.setCancelable(false)
+            val dialog = builder.create()
+            cancel.setOnClickListener {
+                dialog.dismiss()
+            }
+            ok.setOnClickListener {
+                val newFileName = userInput.text.toString()
+                if (newFileName.trim { it <= ' ' }.length > 0) {
+                    voiceFilePath = "$newFileName.aac"
+                    fullVoiceFilePath = voicesDirectoryPath + voiceFilePath
+                    val newFile = File(voicesDirectoryPath, voiceFilePath)
+                    voiceFile.renameTo(newFile)
+                    viewModel.isNameSet.value = true
+                    dialog.dismiss()
+                }
+            }
+            dialog.show()
+            // create and show the alert dialog
+
             return true
         }
         return false
@@ -156,9 +188,9 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 //                    mmr.setDataSource(application, uri)
 //                    val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
 //                    val millSecond = durationStr!!
-            val note = VoiceNote(
-                name = filePath,
-                path = fullFilePath,
+    val note = VoiceNote(
+                name = voiceFilePath,
+                path = fullVoiceFilePath,
                 duration = "",
                 date = date
             )
@@ -185,10 +217,10 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
             if (it) {
                 if (isRecordPermissionGranted()) {
                     date = Calendar.getInstance().timeInMillis
-                    filePath = "Запись " + SimpleDateFormat("dd.MM.yy HH:mm:ss").format(date) +".aac"
-                    fullFilePath = voicesDirectoryPath+ filePath
-                    voiceFile = File(voicesDirectory, filePath)
-                    startRecording(fullFilePath)
+                    voiceFilePath = "Запись " + SimpleDateFormat("dd.MM.yy HH:mm:ss").format(date) +".aac"
+                    fullVoiceFilePath = voicesDirectoryPath+ voiceFilePath
+                    voiceFile = File(voicesDirectory, voiceFilePath)
+                    startRecording(fullVoiceFilePath)
 
                 } else {
                     ActivityCompat.requestPermissions(
@@ -205,15 +237,23 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 //                    mmr.setDataSource(application, uri)
 //                    val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
 //                    val millSecond = durationStr!!
-                    val note = VoiceNote(
-                        name = filePath,
-                        path = fullFilePath,
-                        duration = "",
-                        date = date
-                    )
-                    viewModel.saveSongData(note)
+
+
                 }
 
+            }
+
+        }
+        viewModel.isNameSet.observe(this){
+            if (it){
+                val note = VoiceNote(
+                    name = voiceFilePath,
+                    path = fullVoiceFilePath,
+                    duration = "",
+                    date = date
+                )
+                viewModel.saveSongData(note)
+                viewModel.isNameSet.value = !it
             }
         }
 
@@ -228,10 +268,10 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 //        AudioPlayerActivity.start(this, note, voiceNotes)
     }
     override fun removeNoteItem(note: VoiceNote) {
-        showRemoveSongItemConfirmDialog(note)
+        showRemoveNoteItemConfirmDialog(note)
     }
 
-    private fun showRemoveSongItemConfirmDialog(note: VoiceNote) {
+    private fun showRemoveNoteItemConfirmDialog(note: VoiceNote) {
         // setup the alert builder
         MaterialAlertDialogBuilder(this,
             R.style.NotesThemeOverlay_MaterialComponents_MaterialAlertDialog)
