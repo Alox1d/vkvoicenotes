@@ -1,6 +1,6 @@
 package com.android.player.playlist
 
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.max
@@ -12,7 +12,7 @@ import kotlin.math.max
  **/
 class PlaylistManager(private val mListener: OnSongUpdateListener) {
 
-    private var playlist: Playlist? = null
+    private var playlist: Playlist? = null // TODO Why empty?
     private var mCurrentIndex: Int = 0
 
 
@@ -21,12 +21,12 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
         mCurrentIndex = 0
     }
 
-    fun getCurrentSong(): AVoiceNote? {
+    fun getCurrentSong(): AbstractAudio? {
         return playlist?.getItem(mCurrentIndex)
     }
 
-    fun getCurrentSongList(): java.util.ArrayList<AVoiceNote> {
-        return playlist?.getShuffleOrNormalList() as java.util.ArrayList<AVoiceNote>
+    fun getCurrentSongList(): java.util.ArrayList<AbstractAudio> {
+        return playlist?.getShuffleOrNormalList() as java.util.ArrayList<AbstractAudio>
     }
 
     private fun setCurrentPlaylistIndex(index: Int) {
@@ -61,11 +61,11 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
         }
     }
 
-    fun setCurrentPlaylist(newPlaylist: MutableList<AVoiceNote>, initialSong: AVoiceNote? = null) {
+    fun setCurrentPlaylist(newPlaylist: MutableList<AbstractAudio>, initialSong: AbstractAudio? = null) {
         playlist = Playlist().setList(newPlaylist)
         var index = 0
         initialSong?.let {
-            index = getSongIndexOnPlaylist(playlist?.getShuffleOrNormalList() as Iterable<AVoiceNote>, it)
+            index = getSongIndexOnPlaylist(playlist?.getShuffleOrNormalList() as Iterable<AbstractAudio>, it)
         }
         mCurrentIndex = max(index, 0)
         setCurrentPlaylistIndex(index)
@@ -81,11 +81,11 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
         mListener.onSongChanged(currentSong)
     }
 
-    fun addToPlaylist(songList: ArrayList<AVoiceNote>) {
+    fun addToPlaylist(songList: ArrayList<AbstractAudio>) {
         playlist?.addItems(songList)
     }
 
-    fun addToPlaylist(song: AVoiceNote) {
+    fun addToPlaylist(song: AbstractAudio) {
         playlist?.addItem(song)
     }
 
@@ -115,16 +115,16 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
         playlist?.isRepeatAll = isRepeatAll
     }
 
-    private fun getSongIndexOnPlaylist(list: Iterable<AVoiceNote>, song: AVoiceNote): Int {
+    private fun getSongIndexOnPlaylist(list: Iterable<AbstractAudio>, song: AbstractAudio): Int {
         for ((index, item) in list.withIndex()) {
-            if (song.noteId == item.noteId) {
+            if (song.audioId == item.audioId) {
                 return index
             }
         }
         return -1
     }
 
-    fun getRandomIndex(list: List<AVoiceNote>) = Random().nextInt(list.size)
+    fun getRandomIndex(list: List<AbstractAudio>) = Random().nextInt(list.size)
 
 
     /**
@@ -134,7 +134,7 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
      * @param list2 containing [ASong]'s
      * @return boolean indicating whether the playlist's match
      */
-    fun equals(list1: List<AVoiceNote>?, list2: List<AVoiceNote>?): Boolean {
+    fun equals(list1: List<AbstractAudio>?, list2: List<AbstractAudio>?): Boolean {
         if (list1 === list2) {
             return true
         }
@@ -145,7 +145,7 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
             return false
         }
         for (i in list1.indices) {
-            if (list1[i].noteId != list2[i].noteId) {
+            if (list1[i].audioId != list2[i].audioId) {
                 return false
             }
         }
@@ -159,7 +159,7 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
      * */
     interface OnSongUpdateListener {
 
-        fun onSongChanged(song: AVoiceNote)
+        fun onSongChanged(song: AbstractAudio)
 
         fun onSongRetrieveError()
 

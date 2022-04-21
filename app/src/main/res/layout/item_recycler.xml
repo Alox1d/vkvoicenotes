@@ -7,7 +7,7 @@
 
         <variable
             name="data"
-            type="com.alox1d.vkvoicenotes.data.model.VoiceNote" />
+            type="com.alox1d.vkvoicenotes.domain.model.VoiceNote" />
 
     </data>
 

@@ -1,6 +1,6 @@
 package com.android.player.service
 
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 
 
 /**
@@ -9,7 +9,7 @@ import com.android.player.model.AVoiceNote
  * */
 interface OnPlayerServiceCallback {
 
-    fun updateSongData(song: AVoiceNote)
+    fun updateSongData(song: AbstractAudio)
 
     fun updateSongProgress(duration: Long, position: Long)
 

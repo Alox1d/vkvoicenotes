@@ -1,0 +1,43 @@
+package com.alox1d.vkvoicenotes.data.model
+
+import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.alox1d.vkvoicenotes.domain.model.VoiceNote
+import kotlinx.android.parcel.Parcelize
+
+@Suppress("DIFFERENT_NAMES_FOR_THE_SAME_PARAMETER_IN_SUPERTYPES")
+@Entity
+@Parcelize
+data class VoiceNoteDTO(
+    @PrimaryKey(autoGenerate = true) var id: Int = 0,
+    val name: String?,
+    val path: String,
+    val duration: String?,
+    val type:Int=0,
+    val date:Long,
+    var isPlaying:Boolean = false,
+    ) : Parcelable
+
+fun VoiceNoteDTO.mapToDomain():VoiceNote{
+    return VoiceNote(
+        id = id,
+        name = name,
+        path = path,
+        duration = duration,
+        type = type,
+        date = date,
+        isPlaying = isPlaying
+    )}
+
+fun VoiceNote.mapToDTO(): VoiceNoteDTO {
+    return VoiceNoteDTO(
+        id = id,
+        name = name,
+        path = path,
+        duration = duration,
+        type = type,
+        date = date,
+        isPlaying = isPlaying
+    )
+}

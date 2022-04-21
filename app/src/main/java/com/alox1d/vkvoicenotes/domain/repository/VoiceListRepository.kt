@@ -1,6 +1,6 @@
 package com.android.musicplayer.domain.repository
 
-import com.alox1d.vkvoicenotes.data.model.VoiceNote
+import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 
 
 interface VoiceListRepository {
@@ -9,6 +9,6 @@ interface VoiceListRepository {
 
     fun getSongs(): List<VoiceNote>?
 
-    fun delete(song: VoiceNote)
+    fun delete(voiceNote: VoiceNote)
 
 }

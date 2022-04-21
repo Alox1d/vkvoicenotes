@@ -10,7 +10,7 @@ import androidx.core.content.ContextCompat
 import com.android.player.media.MediaAdapter
 import com.android.player.media.OnMediaAdapterCallback
 import com.android.player.exo.ExoPlayerManager
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 import com.android.player.notification.MediaNotificationManager
 import java.util.*
 
@@ -55,17 +55,17 @@ class SongPlayerService : Service(), OnMediaAdapterCallback {
         mCallback = null
     }
 
-    fun getCurrentSong(): AVoiceNote? {
+    fun getCurrentSong(): AbstractAudio? {
         return mMediaAdapter?.getCurrentSong()
     }
 
-    fun getCurrentSongList(): ArrayList<AVoiceNote>? {
+    fun getCurrentSongList(): ArrayList<AbstractAudio>? {
         return mMediaAdapter?.getCurrentSongList()
     }
 
     fun getPlayState(): Int = playState
 
-    override fun onSongChanged(song : AVoiceNote) {
+    override fun onSongChanged(song : AbstractAudio) {
         mCallback?.updateSongData(song)
     }
 
@@ -85,11 +85,11 @@ class SongPlayerService : Service(), OnMediaAdapterCallback {
         getCurrentSong()?.let { play(it) }
     }
 
-    fun play(song: AVoiceNote?) {
+    fun play(song: AbstractAudio?) {
         song?.let { mMediaAdapter?.play(it) }
     }
 
-    fun play(songList: MutableList<AVoiceNote>?, song: AVoiceNote?) {
+    fun play(songList: MutableList<AbstractAudio>?, song: AbstractAudio?) {
         song?.let { nonNullSong->
             songList?.let { mMediaAdapter?.play(it, nonNullSong) } ?: play(nonNullSong)
         }
@@ -107,7 +107,7 @@ class SongPlayerService : Service(), OnMediaAdapterCallback {
         mCallback?.stopService()
     }
 
-    override fun addNewPlaylistToCurrent(songList: ArrayList<AVoiceNote>) {
+    override fun addNewPlaylistToCurrent(songList: ArrayList<AbstractAudio>) {
         mMediaAdapter?.addToCurrentPlaylist(songList)
     }
 
@@ -136,20 +136,17 @@ class SongPlayerService : Service(), OnMediaAdapterCallback {
                 mCallback?.setVisibilityData(true)
                 mCallback?.setPlayStatus(true)
             }
-
             PlaybackState.STATE_PLAYING -> {
                 mCallback?.setBufferingData(false)
                 mCallback?.setVisibilityData(true)
                 mCallback?.setPlayStatus(true)
             }
-
             PlaybackState.STATE_PAUSED -> {
                 mCallback?.setBufferingData(false)
                 mCallback?.setVisibilityData(true)
                 mCallback?.setPlayStatus(false)
             }
-
-            else -> {
+            PlaybackState.STATE_STOPPED -> {
                 mCallback?.setBufferingData(false)
                 mCallback?.setVisibilityData(false)
                 mCallback?.setPlayStatus(false)

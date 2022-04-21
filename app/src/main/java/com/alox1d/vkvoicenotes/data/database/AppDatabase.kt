@@ -4,10 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.alox1d.vkvoicenotes.data.model.VoiceNote
+import com.alox1d.vkvoicenotes.data.model.VoiceNoteDTO
+import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 import com.alox1d.vkvoicenotes.internal.DATABASE_NAME
 
-@Database(entities = [VoiceNote::class], version = 2)
+@Database(entities = [VoiceNoteDTO::class], version = 6)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun voiceNotesDao(): VoiceNoteDAO
 
@@ -21,7 +22,7 @@ abstract class AppDatabase: RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             ).fallbackToDestructiveMigration()
-                .allowMainThreadQueries()
+                .allowMainThreadQueries() // TODO RxJava
                 .build()
         operator fun invoke(context: Context) = instance ?: synchronized(LOCK) {
             instance ?: buildDatabase(context).also { instance = it }

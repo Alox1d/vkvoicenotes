@@ -14,15 +14,14 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DefaultItemAnimator
 import com.alox1d.vkvoicenotes.App
 import com.alox1d.vkvoicenotes.R
-import com.alox1d.vkvoicenotes.data.model.VoiceNote
 import com.alox1d.vkvoicenotes.databinding.ActivityMainBinding
 import com.alox1d.vkvoicenotes.databinding.DialogSetFileNameBinding
+import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 import com.alox1d.vkvoicenotes.internal.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE
 import com.alox1d.vkvoicenotes.presentation.adapter.OnVoiceListAdapterListener
 import com.alox1d.vkvoicenotes.presentation.adapter.VoiceNotesAdapter
 import com.alox1d.vkvoicenotes.presentation.viewmodel.VoiceListViewModel
 import com.android.player.BaseSongPlayerActivity
-import com.android.player.model.AVoiceNote
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
@@ -33,7 +32,7 @@ import java.util.*
 
 class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 
-    lateinit var mAdapterVoice: VoiceNotesAdapter
+    lateinit var mAdapterVoiceNotes: VoiceNotesAdapter
     private lateinit var binding: ActivityMainBinding
     private val viewModel: VoiceListViewModel by viewModels()
 
@@ -73,7 +72,7 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 
     private fun setUpListeners() {
         binding.fab.setOnClickListener {
-            viewModel.recording.postValue(!(viewModel.recording.value)!!)
+            viewModel.onToggleRecord()
         }
     }
 
@@ -142,10 +141,10 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                     fullVoiceFilePath = voicesDirectoryPath + voiceFilePath
                     val newFile = File(voicesDirectoryPath, voiceFilePath)
                     voiceFile.renameTo(newFile)
-                    viewModel.isNameSet.value = true
+                    viewModel.setHasNameSet(true)
                     dialog.dismiss()
                 } else {
-                    viewModel.isNameSet.value = true
+                    viewModel.setHasNameSet(true)
                     dialog.dismiss()
                 }
             }
@@ -198,28 +197,32 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                 duration = "",
                 date = date
             )
-            viewModel.saveSongData(note)
+            viewModel.saveVoiceData(note)
         }
 
     }
     private fun setUpRecyclerView() {
-        mAdapterVoice = VoiceNotesAdapter(this)
+        mAdapterVoiceNotes = VoiceNotesAdapter(this)
         binding.recyclerView.apply {
             setHasFixedSize(true)
             itemAnimator = DefaultItemAnimator()
-            this.adapter = mAdapterVoice
+            this.adapter = mAdapterVoiceNotes
         }
     }
     private fun observeLiveData() {
-        viewModel.playlistData.observe(this) {
-            mAdapterVoice.notes = it
+        viewModel.playingState.observe(this) {
+            mAdapterVoiceNotes.notes = it.playlist
+            if (it.playingNote != null && it.playingNote.isPlaying) toggle(it.playlist.toMutableList(), it.playingNote)
         }
         audioPlayerViewModel.isPlayData.observe(this) {
-            mAdapterVoice.playingViewHolder?.itemBinding?.playButton?.setImageResource(if (it) R.drawable.ic_pause_vector else R.drawable.ic_play_vector)
+            viewModel.setNotePlayStatus(it)
+//            mAdapterVoiceNotes.playingViewHolder?.itemBinding?.playButton?.setImageResource(
+//                if (it) R.drawable.ic_pause_vector else R.drawable.ic_play_vector)
         }
         viewModel.recording.observe(this) {
             if (it) {
                 if (isRecordPermissionGranted()) {
+                    // TODO 1
                     date = Calendar.getInstance().timeInMillis
                     voiceFilePath = "Запись " + SimpleDateFormat("dd.MM.yy HH:mm:ss").format(date) +".aac"
                     fullVoiceFilePath = voicesDirectoryPath+ voiceFilePath
@@ -264,8 +267,7 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                     duration = "",
                     date = date
                 )
-                viewModel.saveSongData(note)
-                viewModel.isNameSet.value = !it
+                viewModel.saveVoiceData(note)
             }
         }
 
@@ -273,11 +275,11 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 //        observeIsError()
 //        observeAudious()
     }
-    override fun playNote(note: VoiceNote, voiceNotes: ArrayList<VoiceNote>) {
+    override fun toggleNote(note: VoiceNote, voiceNotes: ArrayList<VoiceNote>) {
 
-        viewModel.onPlayClicked()
-        play(viewModel.playlistData.value as MutableList<AVoiceNote>, note)
-//        AudioPlayerActivity.start(this, note, voiceNotes)
+//        viewModel.onPlayClicked()
+        viewModel.toggleNote(note)
+//        toggle(viewModel.playlistData.value as MutableList<AbstractAudio>, note)
     }
     override fun removeNoteItem(note: VoiceNote) {
         showRemoveNoteItemConfirmDialog(note)
