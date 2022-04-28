@@ -5,4 +5,7 @@
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="you_denied_permission">Вы отклонили разрешение</string>
+    <string name="sync_vk">VK</string>
+
+    <integer name="com_vk_sdk_AppId">8147676</integer>
 </resources>

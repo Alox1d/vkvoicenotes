@@ -29,8 +29,6 @@ class DataModule {
     @Provides
     fun providePlaylistRepository(db:AppDatabase): VoiceListRepository = VoiceListRepositoryImp(db)
 
-
-
     @Singleton
     @Provides
     fun provideNoteDao(appDatabase: AppDatabase):VoiceNoteDAO = appDatabase.voiceNotesDao()
