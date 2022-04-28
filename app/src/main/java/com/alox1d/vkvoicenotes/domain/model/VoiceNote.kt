@@ -1,12 +1,13 @@
 package com.alox1d.vkvoicenotes.domain.model
 
+import android.net.Uri
 import android.os.Parcelable
-import com.alox1d.vkvoicenotes.data.model.VoiceNoteDTO
+import android.speech.tts.Voice
 import com.android.player.model.AbstractAudio
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-data class VoiceNote(
+ data class VoiceNote(
     var id: Int = 0,
     val name: String?,
     val path: String,
@@ -14,6 +15,7 @@ data class VoiceNote(
     val type:Int=0,
     val date:Long,
     var isPlaying:Boolean = false,
+    var uri:Uri? = null
     ) :  AbstractAudio(audioId = id,
     title = name,
     source = path,
@@ -21,5 +23,4 @@ data class VoiceNote(
     length = duration,
     timestampCreated = date),
     Parcelable
-
 

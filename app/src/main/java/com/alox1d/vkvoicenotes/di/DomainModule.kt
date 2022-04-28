@@ -8,6 +8,7 @@ import com.android.musicplayer.domain.repository.VoiceListRepository
 import com.android.musicplayer.domain.usecase.DeleteNoteUseCase
 import com.android.musicplayer.domain.usecase.GetNotesUseCase
 import com.android.musicplayer.domain.usecase.SaveNoteDataUseCase
+import com.android.musicplayer.domain.usecase.SyncNotesUseCase
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -38,7 +39,6 @@ class DomainModule {
         return DeleteNoteUseCase(voiceListRepository)
     }
 
-
     @Singleton
     @Provides
     fun provideGetSongsUseCase(
@@ -47,7 +47,11 @@ class DomainModule {
         return GetNotesUseCase(voiceListRepository)
     }
 
-
-//    @Provides
-//    fun provideTrendingAdapter(data: ArrayList<Data>): NotesAdapter = NotesAdapter(data)
+    @Singleton
+    @Provides
+    fun provideSyncNotesUseCase(
+        voiceListRepository: VoiceListRepository
+    ): SyncNotesUseCase {
+        return SyncNotesUseCase(voiceListRepository)
+    }
 }
