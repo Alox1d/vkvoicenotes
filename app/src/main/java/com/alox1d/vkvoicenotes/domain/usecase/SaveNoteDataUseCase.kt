@@ -1,14 +1,14 @@
 package com.android.musicplayer.domain.usecase
 
 import com.alox1d.vkvoicenotes.domain.model.VoiceNote
-import com.android.artgallery.domain.usecase.base.CompleteUseCase
+import com.android.artgallery.domain.usecase.base.MaybeUseCase
 import com.android.artgallery.domain.usecase.base.SingleUseCase
 import com.android.musicplayer.domain.repository.VoiceListRepository
-import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import javax.inject.Inject
 
-class  SaveNoteDataUseCase @Inject constructor(val voiceListRepository: VoiceListRepository):SingleUseCase<Long>() {
+class SaveNoteDataUseCase @Inject constructor(val voiceListRepository: VoiceListRepository):MaybeUseCase<Long>() {
 
     private var note: VoiceNote? = null
 
@@ -16,7 +16,10 @@ class  SaveNoteDataUseCase @Inject constructor(val voiceListRepository: VoiceLis
         this.note = note
     }
 
-    override fun buildUseCaseSingle(): Single<Long> {
-       return voiceListRepository.saveVoiceNotes(note)
+    override fun buildUseCaseMaybe(): Maybe<Long> {
+        note?.let {
+            return voiceListRepository.saveVoiceNotes(it)
+        }
+        return Maybe.create { it.onComplete() }
     }
 }
