@@ -24,10 +24,11 @@ class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
 
         val uploadInfo = getServerUploadInfo(manager)
         val fileOld = File(note.path)
-        val fileNew = File(note.path.dropLast(1))
-        fileOld.renameTo(fileNew) // TODO Где лучше выполнить переименование?
-        val uri = Uri.fromFile(fileNew) // Todo Где лучше преобразовывать в Uri?
-        uploadDoc(note.name ?: "", uri, uploadInfo, manager)
+        val temp = File(note.path.dropLast(1))
+        fileOld.renameTo(temp) // TODO Где лучше выполнить переименование?
+        val uriTemp = Uri.fromFile(temp) // Todo Где лучше преобразовывать в Uri?
+        uploadDoc(note.name ?: "", uriTemp, uploadInfo, manager)
+        temp.renameTo(fileOld)
     }
 
     private fun getServerUploadInfo(manager: VKApiManager): VKServerUploadInfo {
