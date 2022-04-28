@@ -5,6 +5,7 @@ import com.alox1d.vkvoicenotes.data.model.VoiceNoteDTO
 import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Maybe
 import io.reactivex.Single
 
 
@@ -12,7 +13,7 @@ import io.reactivex.Single
 interface VoiceNoteDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(note: VoiceNoteDTO?): Single<Long>
+    fun insert(note: VoiceNoteDTO?): Maybe<Long>
 
     @Query("SELECT * FROM VoiceNoteDTO")
     fun loadAll(): Flowable<List<VoiceNoteDTO>>

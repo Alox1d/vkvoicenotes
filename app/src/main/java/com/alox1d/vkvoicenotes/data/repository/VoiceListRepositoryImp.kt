@@ -9,6 +9,7 @@ import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 import com.android.musicplayer.domain.repository.VoiceListRepository
 import io.reactivex.Completable
 import io.reactivex.Flowable
+import io.reactivex.Maybe
 import io.reactivex.Single
 
 class VoiceListRepositoryImp(
@@ -16,7 +17,7 @@ class VoiceListRepositoryImp(
     private val mapper: VoiceNoteMapper
 ) : VoiceListRepository {
 
-    override fun delete(voiceNote: VoiceNote?): Completable {
+    override fun delete(voiceNote: VoiceNote): Completable {
         return appDatabase.voiceNotesDao().delete(mapper.mapToDTO(voiceNote))
     }
 
@@ -24,14 +25,13 @@ class VoiceListRepositoryImp(
         // map вынесен в репозиторий, остальное - в use-case (base)
         return appDatabase.voiceNotesDao().loadAll().map { list -> list.map { mapper.mapToDomain(it) } }
     }
-    override fun saveVoiceNotes(voiceNote: VoiceNote?):Single<Long> {
+    override fun saveVoiceNotes(voiceNote: VoiceNote): Maybe<Long> {
         return appDatabase.voiceNotesDao().insert(mapper.mapToDTO(voiceNote))
     }
     override fun syncVoicesNotes(notes: List<VoiceNote>):Completable {
         return Completable.fromCallable {
             (notes.map { VKService().uploadDoc(mapper.mapToDTO(it))})
 //            map{
-                // Todo Где лучше преобразовывать в Uri и как передавать контекст?
 //                Uri.parse(PathUtils.getPath(this, it.mapToDTO().path))
 //                 })
         }

@@ -76,7 +76,7 @@ class VoiceListViewModel(
         _isNameSet.value = _isNameSet.value != true
 
         saveAudioDataUseCase.setNote(note)
-        saveAudioDataUseCase.execute({},{})
+        saveAudioDataUseCase.execute({},{},{})
     }
 
     fun getVoiceNotesFromDB() {

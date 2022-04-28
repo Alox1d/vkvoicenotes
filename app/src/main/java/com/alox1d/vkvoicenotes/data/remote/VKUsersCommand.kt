@@ -15,13 +15,18 @@ import java.util.concurrent.TimeUnit
 
 
 class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
+
+    companion object {
+        const val RETRY_COUNT = 3
+    }
+
     override fun onExecute(manager: VKApiManager) {
 
         val uploadInfo = getServerUploadInfo(manager)
         val fileOld = File(note.path)
         val fileNew = File(note.path.dropLast(1))
         fileOld.renameTo(fileNew) // TODO Где лучше выполнить переименование?
-        val uri = Uri.fromFile(fileNew)
+        val uri = Uri.fromFile(fileNew) // Todo Где лучше преобразовывать в Uri?
         uploadDoc(note.name ?: "", uri, uploadInfo, manager)
     }
 
@@ -31,12 +36,6 @@ class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
             .version(manager.config.version)
             .build()
         return manager.execute(uploadInfoCall, ServerUploadInfoParser())
-    }
-
-    companion object {
-        const val CHUNK_LIMIT = 900
-        const val RETRY_COUNT = 3
-
     }
 
     private fun uploadDoc(
@@ -51,14 +50,15 @@ class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
             .timeout(TimeUnit.MINUTES.toMillis(5))
             .retryCount(RETRY_COUNT)
             .build()
-//        val multipart = MultipartUtility(serverUploadInfo.uploadUrl, "UTF-8")
-//        multipart.addFilePart("file", file);
-//        val response = multipart.finish()
+        // Send file using MultipartUtils:
+        // val multipart = MultipartUtility(serverUploadInfo.uploadUrl, "UTF-8")
+        // multipart.addFilePart("file", file);
+        // val response = multipart.finish()
         val fileUploadInfo = manager.execute(fileUploadCall, null, FileUploadInfoParser())
 
         val saveCall = VKMethodCall.Builder()
             .method("docs.save")
-            .args("file", fileUploadInfo.file) // TODO
+            .args("file", fileUploadInfo.file)
             .version(manager.config.version)
             .build()
 

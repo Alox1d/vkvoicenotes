@@ -28,7 +28,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import org.json.JSONObject
 
-class VKDocUploadInfo(val uploadUrl: String = "")
 class VKServerUploadInfo(val uploadUrl: String)
 class VKFileUploadInfo(val file: String)
 
