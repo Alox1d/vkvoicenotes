@@ -107,7 +107,7 @@ class SongPlayerService : Service(), OnMediaAdapterCallback {
         mCallback?.stopService()
     }
 
-    override fun addNewPlaylistToCurrent(songList: ArrayList<AbstractAudio>) {
+    override fun addNewPlaylistToCurrent(songList: MutableList<AbstractAudio>) {
         mMediaAdapter?.addToCurrentPlaylist(songList)
     }
 

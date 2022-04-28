@@ -8,7 +8,7 @@ import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
 
-class  SaveNoteDataUseCase @Inject constructor(var voiceListRepository: VoiceListRepository):SingleUseCase<Long>() {
+class  SaveNoteDataUseCase @Inject constructor(val voiceListRepository: VoiceListRepository):SingleUseCase<Long>() {
 
     private var note: VoiceNote? = null
 

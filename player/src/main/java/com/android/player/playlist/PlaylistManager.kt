@@ -81,7 +81,7 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
         mListener.onSongChanged(currentSong)
     }
 
-    fun addToPlaylist(songList: ArrayList<AbstractAudio>) {
+    fun addToPlaylist(songList: MutableList<AbstractAudio>) {
         playlist?.addItems(songList)
     }
 

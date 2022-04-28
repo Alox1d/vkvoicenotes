@@ -3,11 +3,9 @@ package com.alox1d.vkvoicenotes.di
 import android.app.Application
 import com.alox1d.vkvoicenotes.data.database.AppDatabase
 import com.alox1d.vkvoicenotes.data.database.VoiceNoteDAO
+import com.alox1d.vkvoicenotes.data.model.VoiceNoteMapper
 import com.alox1d.vkvoicenotes.data.repository.VoiceListRepositoryImp
 import com.android.musicplayer.domain.repository.VoiceListRepository
-import com.android.musicplayer.domain.usecase.DeleteNoteUseCase
-import com.android.musicplayer.domain.usecase.GetNotesUseCase
-import com.android.musicplayer.domain.usecase.SaveNoteDataUseCase
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -24,12 +22,20 @@ class DataModule {
 
     @Singleton
     @Provides
-    fun provideDb(application: Application):AppDatabase = AppDatabase.invoke(application)
+    fun provideDb(application: Application): AppDatabase = AppDatabase.invoke(application)
 
     @Provides
-    fun providePlaylistRepository(db:AppDatabase): VoiceListRepository = VoiceListRepositoryImp(db)
+    fun provideVoiceNoteMapper(): VoiceNoteMapper = VoiceNoteMapper()
+
+    @Provides
+    fun providePlaylistRepository(db: AppDatabase, mapper: VoiceNoteMapper): VoiceListRepository {
+        return VoiceListRepositoryImp(
+            db,
+            mapper
+        )
+    }
 
     @Singleton
     @Provides
-    fun provideNoteDao(appDatabase: AppDatabase):VoiceNoteDAO = appDatabase.voiceNotesDao()
+    fun provideNoteDao(appDatabase: AppDatabase): VoiceNoteDAO = appDatabase.voiceNotesDao()
 }

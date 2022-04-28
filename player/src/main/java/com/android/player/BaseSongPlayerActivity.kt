@@ -127,7 +127,7 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
         }
     }
 
-    fun addNewPlaylistToCurrent(songList: ArrayList<AbstractAudio>) {
+    fun addNewPlaylistToCurrent(songList: MutableList<AbstractAudio>) {
         mService?.addNewPlaylistToCurrent(songList)
     }
 

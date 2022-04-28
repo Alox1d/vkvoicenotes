@@ -68,7 +68,7 @@ class VoiceNotesAdapter(
 //                    }
 //
 //                }
-                mListener.toggleNote(note, notes as ArrayList<VoiceNote>)
+                mListener.toggleNote(note, notes)
             }
             val img = if (note.isPlaying) {
                 R.drawable.ic_pause_vector

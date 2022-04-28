@@ -51,7 +51,7 @@ class MediaAdapter(
         playlistManager?.skipPosition(-1)
     }
 
-    fun addToCurrentPlaylist(songList: ArrayList<AbstractAudio>) {
+    fun addToCurrentPlaylist(songList: MutableList<AbstractAudio>) {
         Log.d(TAG, "addToCurrentPlaylist() called with: songList = $songList")
         playlistManager?.addToPlaylist(songList)
     }

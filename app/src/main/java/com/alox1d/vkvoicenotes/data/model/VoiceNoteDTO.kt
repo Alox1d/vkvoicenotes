@@ -19,25 +19,3 @@ data class VoiceNoteDTO(
     var isPlaying:Boolean = false,
     ) : Parcelable
 
-fun VoiceNoteDTO.mapToDomain():VoiceNote{
-    return VoiceNote(
-        id = id,
-        name = name,
-        path = path,
-        duration = duration,
-        type = type,
-        date = date,
-        isPlaying = isPlaying
-    )}
-
-fun VoiceNote.mapToDTO(): VoiceNoteDTO {
-    return VoiceNoteDTO(
-        id = id,
-        name = name,
-        path = path,
-        duration = duration,
-        type = type,
-        date = date,
-        isPlaying = isPlaying
-    )
-}

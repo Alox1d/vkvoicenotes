@@ -25,7 +25,7 @@ class Playlist {
         return this
     }
 
-    fun addItems(songList: ArrayList<AbstractAudio>) {
+    fun addItems(songList: MutableList<AbstractAudio>) {
         this.list.addAll(songList)
         songList.shuffle()
         this.shuffleList.addAll(songList)
