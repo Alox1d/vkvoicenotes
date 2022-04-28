@@ -55,7 +55,6 @@ class VoiceListViewModel(
                         it.id == note?.id
                     }?.isPlaying = false
                 }
-                it.playingNote?.isPlaying = isPlay
                 _playingState.postValue(PlayingState(list, note))
             }
 //            val list = _playingState.value?.playlist?.map {
