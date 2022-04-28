@@ -32,15 +32,15 @@ import java.util.*
 
 class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 
-    lateinit var mAdapterVoiceNotes: VoiceNotesAdapter
+    private lateinit var mAdapterVoiceNotes: VoiceNotesAdapter
     private lateinit var binding: ActivityMainBinding
     private val viewModel: VoiceListViewModel by viewModels()
 
-    private lateinit var fullVoiceFilePath: String;
-    private lateinit var voiceFilePath: String;
-    private lateinit var voiceFile: File
-    private lateinit var voicesDirectoryPath: String
-    private lateinit var voicesDirectory: File
+    private var fullVoiceFilePath: String = ""
+    private var voiceFilePath: String = ""
+    private var voiceFile: File? = null
+    private var voicesDirectoryPath = ""
+    private var voicesDirectory: File? = null
     private var date: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,15 +58,16 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         setUpPermissions()
         setUpListeners()
         setUpNotesDirectory()
-
     }
 
     private fun setUpNotesDirectory() {
         voicesDirectoryPath =
             getExternalFilesDir(null)?.absolutePath + File.separator + "VoiceNotes" + File.separator
         voicesDirectory = File(voicesDirectoryPath)
-        if (!voicesDirectory.exists()) {
-            voicesDirectory.mkdirs()
+        voicesDirectory?.let{
+            if (!it.exists()){
+                it.mkdirs()
+            }
         }
     }
 
@@ -136,17 +137,16 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
             }
             ok.setOnClickListener {
                 val newFileName = userInput.text.toString()
-                if (newFileName.trim { it <= ' ' }.length > 0) {
+                if (newFileName.trim { it <= ' ' }.isNotEmpty()) {
                     voiceFilePath = "$newFileName.aac"
                     fullVoiceFilePath = voicesDirectoryPath + voiceFilePath
                     val newFile = File(voicesDirectoryPath, voiceFilePath)
-                    voiceFile.renameTo(newFile)
-                    viewModel.setHasNameSet(true)
-                    dialog.dismiss()
-                } else {
-                    viewModel.setHasNameSet(true)
-                    dialog.dismiss()
+                    voiceFile?.let {
+                        it.renameTo(newFile)
+                    }
                 }
+                viewModel.onNameSet()
+                dialog.dismiss()
             }
             dialog.show()
             // create and show the alert dialog
@@ -270,14 +270,8 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                 viewModel.saveVoiceData(note)
             }
         }
-
-//        observeInProgress()
-//        observeIsError()
-//        observeAudious()
     }
-    override fun toggleNote(note: VoiceNote, voiceNotes: ArrayList<VoiceNote>) {
-
-//        viewModel.onPlayClicked()
+    override fun toggleNote(note: VoiceNote, voiceNotes: List<VoiceNote>) {
         viewModel.toggleNote(note)
 //        toggle(viewModel.playlistData.value as MutableList<AbstractAudio>, note)
     }

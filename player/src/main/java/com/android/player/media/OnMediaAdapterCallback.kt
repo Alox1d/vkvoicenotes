@@ -18,7 +18,7 @@ interface OnMediaAdapterCallback {
 
     fun setDuration(duration: Long, position: Long)
 
-    fun addNewPlaylistToCurrent(songList: ArrayList<AbstractAudio>)
+    fun addNewPlaylistToCurrent(songList: MutableList<AbstractAudio>)
 
     fun onShuffle(isShuffle: Boolean)
 

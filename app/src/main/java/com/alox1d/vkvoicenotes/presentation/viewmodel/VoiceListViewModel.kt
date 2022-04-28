@@ -36,11 +36,6 @@ class VoiceListViewModel(
     val isNameSet: LiveData<Boolean>
         get() = _isNameSet
 
-    init {
-//        DaggerAppComponent.create().inject(this)
-//        compositeDisposable.add(repository.fetchDataFromDatabase())
-    }
-
     fun toggleNote(note: VoiceNote) {
         val list = _playingState.value?.playlist?.map {
             val isPlaying = if (it == note) !it.isPlaying else false
@@ -52,18 +47,21 @@ class VoiceListViewModel(
 
     fun setNotePlayStatus(isPlay: Boolean) {
         if (!isPlay) {
-            val note = playingState.value?.playingNote?.apply { isPlaying = isPlay }
-            val list = _playingState.value?.playlist?.apply {
-                find {
-                    it.id == note?.id
-                }?.isPlaying = false
-            } ?: emptyList()
+            val state  = playingState.value
+            state?.let {
+                val note = it.playingNote?.apply { isPlaying = isPlay }
+                val list = it.playlist.apply {
+                    find {
+                        it.id == note?.id
+                    }?.isPlaying = false
+                }
+                it.playingNote?.isPlaying = isPlay
+                _playingState.postValue(PlayingState(list, note))
+            }
 //            val list = _playingState.value?.playlist?.map {
 //                val isPlaying = if (it == note) !it.isPlaying else false
 //                it.copy(isPlaying = isPlaying)
 //            } ?: emptyList()
-            _playingState.value?.playingNote?.isPlaying = isPlay
-            _playingState.postValue(PlayingState(list, note))
         }
     }
 
@@ -97,7 +95,7 @@ class VoiceListViewModel(
         _recording.value = _recording.value != true
     }
 
-    fun setHasNameSet(isNameSet: Boolean) {
+    fun onNameSet() {
         _isNameSet.value = _isNameSet.value != true
 
     }
