@@ -20,6 +20,6 @@ class SaveNoteDataUseCase @Inject constructor(val voiceListRepository: VoiceList
         note?.let {
             return voiceListRepository.saveVoiceNotes(it)
         }
-        return Maybe.create { it.onComplete() }
+        return Maybe.empty()
     }
 }
