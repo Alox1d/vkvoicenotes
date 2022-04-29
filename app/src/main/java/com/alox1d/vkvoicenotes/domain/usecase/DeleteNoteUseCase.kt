@@ -18,7 +18,7 @@ class DeleteNoteUseCase @Inject constructor(val voiceListRepository: VoiceListRe
 
     override fun buildUseCaseCompletable(): Completable {
         note?.let { return voiceListRepository.delete(it) }
-        return Completable.error{throw Exception("Voice note id's not set")}
+        return Completable.error(IllegalArgumentException("Voice note id's not set"))
     }
 
 }
