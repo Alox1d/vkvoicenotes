@@ -4,6 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.alox1d.vkvoicenotes.domain.model.VoiceNote
+import com.alox1d.vkvoicenotes.domain.usecase.base.model.DeleteParams
+import com.alox1d.vkvoicenotes.domain.usecase.base.model.SaveParams
+import com.alox1d.vkvoicenotes.domain.usecase.base.model.SyncParams
 import com.android.musicplayer.domain.usecase.DeleteNoteUseCase
 import com.android.musicplayer.domain.usecase.GetNotesUseCase
 import com.android.musicplayer.domain.usecase.SaveNoteDataUseCase
@@ -75,8 +78,8 @@ class VoiceListViewModel(
     fun saveVoiceData(note: VoiceNote) {
         _isNameSet.value = _isNameSet.value != true
 
-        saveAudioDataUseCase.setNote(note)
-        saveAudioDataUseCase.execute({},{},{})
+//        saveAudioDataUseCase.setNote(note)
+        saveAudioDataUseCase.execute({},{},{}, params = SaveParams(note))
     }
 
     fun getVoiceNotesFromDB() {
@@ -91,8 +94,8 @@ class VoiceListViewModel(
     }
 
     fun removeItemFromList(note: VoiceNote) {
-        deleteNoteUseCase.setNote(note)
-        deleteNoteUseCase.execute({},{})
+//        deleteNoteUseCase.setNote(note)
+        deleteNoteUseCase.execute({},{}, DeleteParams(note))
 //        val list = _playingState.value?.playlist as? MutableList<VoiceNote> ?: mutableListOf()
 //        list.remove(note)
 //        _playingState.value = PlayingState(list)
@@ -114,16 +117,9 @@ class VoiceListViewModel(
 
     fun syncVK() {
         playingState.value?.playlist?.let {
-            syncNotesUseCase.addNotes(
-                it
-//                it.map {
-//                Uri.parse(it.path)
-//        }
-//                it.map {
-//                    it.uri = Uri.parse(PathUtils.getPath(context, Uri.parse(it.path) ))
-//                    it
-//                }
-        )
+//            syncNotesUseCase.addNotes(
+//                it
+//        )
             syncNotesUseCase.execute(
                 onComplete = {
                _isSyncSuccess.postValue(true) // Как лучше оформить данные отображения успеха/ошибки в UI? Sealed-классами?
@@ -131,7 +127,9 @@ class VoiceListViewModel(
                 onError = {
                 _isSyncError.postValue(true)
                 _isSyncError.postValue(false)
-            })
+            },
+            p = SyncParams(it)
+            )
         }
 
 
