@@ -12,7 +12,7 @@ import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [AppModule::class])
+@Component(modules = [DataModule::class, DomainModule::class])
 interface AppComponent {
     fun inject(viewModel: VoiceListViewModel)
     fun inject(voiceListActivity: VoiceListActivity)

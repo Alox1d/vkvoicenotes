@@ -20,20 +20,7 @@ import javax.inject.Singleton
 // Dagger will look at the return type of the other methods in AppModule.
 // If a correct return type is there, Dagger will automatically link those methods.
 @Module
-class AppModule {
-
-    @Singleton
-    @Provides
-    fun provideDb(application: Application):AppDatabase = AppDatabase.invoke(application)
-
-    @Provides
-    fun providePlaylistRepository(db:AppDatabase): VoiceListRepository = VoiceListRepositoryImp(db)
-
-
-
-    @Singleton
-    @Provides
-    fun provideNoteDao(appDatabase: AppDatabase):VoiceNoteDAO = appDatabase.voiceNotesDao()
+class DomainModule {
 
     @Singleton
     @Provides

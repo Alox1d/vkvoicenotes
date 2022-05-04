@@ -1,6 +1,6 @@
 package com.android.player.exo
 
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 import java.util.ArrayList
 
 /**
@@ -15,7 +15,7 @@ interface OnExoPlayerManagerCallback {
 
     fun stop()
 
-    fun play(aSong: AVoiceNote)
+    fun play(aSong: AbstractAudio)
 
     fun pause()
 
@@ -36,9 +36,9 @@ interface OnExoPlayerManagerCallback {
 
         fun setCurrentPosition(position: Long, duration: Long)
 
-        fun getCurrentSong(): AVoiceNote?
+        fun getCurrentSong(): AbstractAudio?
 
-        fun getCurrentSongList(): ArrayList<AVoiceNote>?
+        fun getCurrentSongList(): ArrayList<AbstractAudio>?
 
         fun shuffle(isShuffle: Boolean)
 

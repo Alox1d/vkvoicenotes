@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "fec3fd6b63f92b3af133ced79cb359ec",
+    "identityHash": "54dcf3a69028c03fbae6163eb40dccdb",
     "entities": [
       {
         "tableName": "VoiceNote",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `path` TEXT NOT NULL, `duration` TEXT, `type` INTEGER NOT NULL, `date` INTEGER NOT NULL, `noteId` INTEGER NOT NULL, `title` TEXT, `source` TEXT, `noteType` INTEGER NOT NULL, `length` TEXT, `downloadPath` TEXT, `timestampCreated` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `path` TEXT NOT NULL, `duration` TEXT, `type` INTEGER NOT NULL, `date` INTEGER NOT NULL, `title` TEXT, `source` TEXT, `noteType` INTEGER NOT NULL, `length` TEXT, `downloadPath` TEXT, `timestampCreated` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -41,12 +41,6 @@
           {
             "fieldPath": "date",
             "columnName": "date",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "noteId",
-            "columnName": "noteId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -100,7 +94,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fec3fd6b63f92b3af133ced79cb359ec')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '54dcf3a69028c03fbae6163eb40dccdb')"
     ]
   }
 }

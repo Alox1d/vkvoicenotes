@@ -2,15 +2,18 @@ package com.android.player.model
 
 import android.os.Parcelable
 
-abstract class AVoiceNote(
-    var noteId: Int = 0,
+abstract class AbstractAudio(
+    @Transient
+    var audioId: Int,
     var title: String? = "",
     var source: String? = "",
-    var noteType: Int = 0,
+    var audioType: Int = 0,
     var length: String? = "",
     var downloadPath: String? = "",
     var timestampCreated:Long = 0
-) : Parcelable {
+)
+    : Parcelable
+{
 
     @Transient
     var totalDuration: Long = 0

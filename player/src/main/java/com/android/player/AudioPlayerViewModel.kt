@@ -3,14 +3,14 @@ package com.android.player
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 import com.android.player.util.formatTimeInMillisToString
 
 
 class AudioPlayerViewModel : ViewModel() {
 
-    private val _playerData = MutableLiveData<AVoiceNote>()
-    val playerData: LiveData<AVoiceNote> = _playerData
+    private val _playerData = MutableLiveData<AbstractAudio>()
+    val playerData: LiveData<AbstractAudio> = _playerData
     private val _isVisibleData = MutableLiveData<Boolean>()
     val isVisibleData: LiveData<Boolean> = _isVisibleData
     private val _isBufferingData = MutableLiveData<Boolean>()
@@ -34,7 +34,7 @@ class AudioPlayerViewModel : ViewModel() {
     private val _isRepeatData = MutableLiveData<Boolean>()
     val isRepeatData: LiveData<Boolean> = _isRepeatData
 
-    val song: AVoiceNote?
+    val song: AbstractAudio?
         get() = _playerData.value
 
     init {
@@ -43,11 +43,11 @@ class AudioPlayerViewModel : ViewModel() {
         _isVisibleData.value = false
     }
 
-    fun updateSong(song : AVoiceNote){
+    fun updateSong(song : AbstractAudio){
         _playerData.value = song
     }
 
-    fun setData(song: AVoiceNote?) {
+    fun setData(song: AbstractAudio?) {
         if (song == _playerData.value) return
         this._playerData.value = song
         this._isRepeatData.value = false
@@ -77,7 +77,7 @@ class AudioPlayerViewModel : ViewModel() {
         this._isBufferingData.value = isBuffering
     }
 
-    fun setPlayStatus(playStatus : Boolean){
+    fun setPlayStatus(playStatus: Boolean){
         _isPlayData.value = playStatus
     }
 

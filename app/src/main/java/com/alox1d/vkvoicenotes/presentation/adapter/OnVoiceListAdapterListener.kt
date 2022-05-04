@@ -1,10 +1,10 @@
 package com.alox1d.vkvoicenotes.presentation.adapter
 
-import com.alox1d.vkvoicenotes.data.model.VoiceNote
+import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 
 interface OnVoiceListAdapterListener {
 
-    fun playNote(note: VoiceNote, voiceNotes: ArrayList<VoiceNote>)
+    fun toggleNote(note: VoiceNote, voiceNotes: List<VoiceNote>)
 
     fun removeNoteItem(note: VoiceNote)
 }

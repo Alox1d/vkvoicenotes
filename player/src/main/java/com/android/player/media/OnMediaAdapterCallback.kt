@@ -1,7 +1,7 @@
 package com.android.player.media
 
 
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 import java.util.ArrayList
 
 /**
@@ -12,13 +12,13 @@ import java.util.ArrayList
  * */
 interface OnMediaAdapterCallback {
 
-    fun onSongChanged(song : AVoiceNote)
+    fun onSongChanged(song : AbstractAudio)
 
     fun onPlaybackStateChanged(state : Int)
 
     fun setDuration(duration: Long, position: Long)
 
-    fun addNewPlaylistToCurrent(songList: ArrayList<AVoiceNote>)
+    fun addNewPlaylistToCurrent(songList: MutableList<AbstractAudio>)
 
     fun onShuffle(isShuffle: Boolean)
 

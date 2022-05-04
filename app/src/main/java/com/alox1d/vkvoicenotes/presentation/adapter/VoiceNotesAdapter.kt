@@ -5,20 +5,20 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.alox1d.vkvoicenotes.R
-import com.alox1d.vkvoicenotes.data.model.VoiceNote
 import com.alox1d.vkvoicenotes.databinding.ItemRecyclerBinding
+import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 import kotlin.properties.Delegates
 
 class VoiceNotesAdapter(
     val mListener: OnVoiceListAdapterListener
 ) : RecyclerView.Adapter<VoiceNotesAdapter.NoteViewHolder>() {
 
-    var notes: List<VoiceNote> by Delegates.observable(emptyList()) { _, _, _ ->
-        notifyDataSetChanged()
-    }
     var playingPosition = -1
     var playingViewHolder:NoteViewHolder? = null
 
+    var notes: List<VoiceNote> by Delegates.observable(emptyList()) { _, _, _ ->
+        notifyDataSetChanged()
+    }
 
     override fun getItemCount(): Int = notes.size
 
@@ -49,27 +49,33 @@ class VoiceNotesAdapter(
             }
 
             itemView.setOnClickListener {
-                if (playingPosition == position) {
-                    playingPosition =  -1
-                    holder.itemBinding.playButton.setImageResource(R.drawable.ic_play_vector)
-                    playingViewHolder = null
-
-                } else {
-                    if (playingPosition == -1){
-                        playingPosition = position
-                        holder.itemBinding.playButton.setImageResource(R.drawable.ic_pause_vector)
-                        playingViewHolder = holder
-                    } else {
-                        playingPosition = position
-                        playingViewHolder?.itemBinding?.playButton?.setImageResource(R.drawable.ic_play_vector)
-
-                        holder.itemBinding.playButton.setImageResource(R.drawable.ic_pause_vector)
-                        playingViewHolder = holder
-                    }
-
-                }
-                mListener.playNote(note, notes as ArrayList<VoiceNote>)
+//                if (playingPosition == position) {
+//                    playingPosition =  -1
+////                    holder.itemBinding.playButton.setImageResource(R.drawable.ic_play_vector)
+//                    playingViewHolder = null
+//
+//                } else {
+//                    if (playingPosition == -1){
+//                        playingPosition = position
+////                        holder.itemBinding.playButton.setImageResource(R.drawable.ic_pause_vector)
+//                        playingViewHolder = holder
+//                    } else {
+//                        playingPosition = position
+////                        playingViewHolder?.itemBinding?.playButton?.setImageResource(R.drawable.ic_play_vector)
+//
+////                        holder.itemBinding.playButton.setImageResource(R.drawable.ic_pause_vector)
+//                        playingViewHolder = holder
+//                    }
+//
+//                }
+                mListener.toggleNote(note, notes)
             }
+            val img = if (note.isPlaying) {
+                R.drawable.ic_pause_vector
+            } else {
+                R.drawable.ic_play_vector
+            }
+            holder.itemBinding.playButton.setImageResource(img)
 
         }
     }

@@ -16,9 +16,8 @@ import androidx.core.app.NotificationCompat
 import com.android.player.BaseSongPlayerActivity
 import com.android.player.R
 import com.android.player.exo.PlaybackState
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 import com.android.player.service.SongPlayerService
-import java.io.File
 
 
 class MediaNotificationManager @Throws(RemoteException::class)
@@ -161,7 +160,7 @@ constructor(private val mService: SongPlayerService) : BroadcastReceiver() {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("player://")).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             mService.getCurrentSong()?.let {
-                putExtra(AVoiceNote::class.java.name, it)
+                putExtra(AbstractAudio::class.java.name, it) // Нужен Parcelable
             }
             mService.getCurrentSongList()?.let {
                 putExtra(BaseSongPlayerActivity.SONG_LIST_KEY, it)

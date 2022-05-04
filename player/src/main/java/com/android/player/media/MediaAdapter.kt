@@ -2,9 +2,8 @@ package com.android.player.media
 
 import android.util.Log
 import com.android.player.exo.OnExoPlayerManagerCallback
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 import com.android.player.playlist.PlaylistManager
-import com.android.player.playlist.Playlist
 import java.util.*
 
 
@@ -24,11 +23,11 @@ class MediaAdapter(
         playlistManager = PlaylistManager(this)
     }
 
-    fun play(song: AVoiceNote) {
+    fun play(song: AbstractAudio) {
         onExoPlayerManagerCallback.play(song)
     }
 
-    fun play(songList: MutableList<AVoiceNote>, song: AVoiceNote) {
+    fun play(songList: MutableList<AbstractAudio>, song: AbstractAudio) {
         playlistManager?.setCurrentPlaylist(songList, song)
     }
 
@@ -52,12 +51,12 @@ class MediaAdapter(
         playlistManager?.skipPosition(-1)
     }
 
-    fun addToCurrentPlaylist(songList: ArrayList<AVoiceNote>) {
+    fun addToCurrentPlaylist(songList: MutableList<AbstractAudio>) {
         Log.d(TAG, "addToCurrentPlaylist() called with: songList = $songList")
         playlistManager?.addToPlaylist(songList)
     }
 
-    fun addToCurrentPlaylist(song: AVoiceNote) {
+    fun addToCurrentPlaylist(song: AbstractAudio) {
         Log.d(TAG, "addToCurrentPlaylist() called with: song = $song")
         playlistManager?.addToPlaylist(song)
     }
@@ -75,7 +74,7 @@ class MediaAdapter(
     }
 
 
-    override fun onSongChanged(song: AVoiceNote) {
+    override fun onSongChanged(song: AbstractAudio) {
         play(song)
         mediaAdapterCallback.onSongChanged(song)
     }
@@ -88,11 +87,11 @@ class MediaAdapter(
         mediaAdapterCallback.onPlaybackStateChanged(state)
     }
 
-    override fun getCurrentSongList(): ArrayList<AVoiceNote>?{
+    override fun getCurrentSongList(): ArrayList<AbstractAudio>?{
         return playlistManager?.getCurrentSongList()
     }
 
-    override fun getCurrentSong(): AVoiceNote? {
+    override fun getCurrentSong(): AbstractAudio? {
         return playlistManager?.getCurrentSong()
     }
 
@@ -107,11 +106,11 @@ class MediaAdapter(
             playlistManager?.repeat()
             return
         }
-
-        if (playlistManager?.hasNext() == true) {
-            playlistManager?.skipPosition(1)
-            return
-        }
+        // Option: if next should be played
+//        if (playlistManager?.hasNext() == true) {
+//            playlistManager?.skipPosition(1)
+//            return
+//        }
 
         if (playlistManager?.isRepeatAll() == true) {
             playlistManager?.skipPosition(-1)

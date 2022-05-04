@@ -1,42 +1,42 @@
 package com.android.player.playlist
 
-import com.android.player.model.AVoiceNote
+import com.android.player.model.AbstractAudio
 
 
 class Playlist {
 
-    private var list: MutableList<AVoiceNote> = ArrayList()
-    private var shuffleList: MutableList<AVoiceNote> = ArrayList()
+    private var list: MutableList<AbstractAudio> = ArrayList()
+    private var shuffleList: MutableList<AbstractAudio> = ArrayList()
     var isShuffle = false
     var isRepeat = false
     var isRepeatAll = false
 
-    fun getShuffleOrNormalList(): MutableList<AVoiceNote> {
+    fun getShuffleOrNormalList(): MutableList<AbstractAudio> {
         return if (isShuffle) shuffleList else list
     }
 
     fun getCurrentPlaylistSize(): Int = getShuffleOrNormalList().size
 
-    fun setList(list: MutableList<AVoiceNote>): Playlist {
+    fun setList(list: MutableList<AbstractAudio>): Playlist {
         clearList()
         this.list = list
-        list.shuffle()
+//        list.shuffle()
         this.shuffleList = ArrayList(list)
         return this
     }
 
-    fun addItems(songList: ArrayList<AVoiceNote>) {
+    fun addItems(songList: MutableList<AbstractAudio>) {
         this.list.addAll(songList)
         songList.shuffle()
         this.shuffleList.addAll(songList)
     }
 
-    fun addItem(song: AVoiceNote) {
+    fun addItem(song: AbstractAudio) {
         this.list.add(song)
         this.shuffleList.add(song)
     }
 
-    fun getItem(index : Int): AVoiceNote?{
+    fun getItem(index : Int): AbstractAudio?{
         if (index >= getCurrentPlaylistSize()) return null
         return getShuffleOrNormalList()[index]
     }

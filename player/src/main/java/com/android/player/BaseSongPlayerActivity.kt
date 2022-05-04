@@ -8,9 +8,11 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.android.player.AudioPlayerViewModel.Companion.getPlayerViewModelInstance
-import com.android.player.model.AVoiceNote
+import com.android.player.exo.ExoPlayerManager
+import com.android.player.model.AbstractAudio
 import com.android.player.service.OnPlayerServiceCallback
 import com.android.player.service.SongPlayerService
 
@@ -21,8 +23,8 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
     private var mService: SongPlayerService? = null
     private var mServiceIntent: Intent? = null
     private var mBound = false
-    private var mSong: AVoiceNote? = null
-    private var mSongList: MutableList<AVoiceNote>? = null
+    private var mSong: AbstractAudio? = null
+    private var mSongList: MutableList<AbstractAudio>? = null
     private var msg = 0
     val audioPlayerViewModel: AudioPlayerViewModel = getPlayerViewModelInstance()
 
@@ -30,7 +32,7 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
     private val mHandler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                ACTION_PLAY_SONG_IN_LIST -> mService?.play( mSong)
+                ACTION_PLAY_SONG_IN_LIST -> mService?.play(mSongList, mSong)
                 ACTION_PAUSE -> mService?.pause()
                 ACTION_STOP -> {
                     mService?.stop()
@@ -67,27 +69,24 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
             mServiceIntent = Intent(this, SongPlayerService::class.java)
             bindService(mServiceIntent, mConnection, Context.BIND_AUTO_CREATE)
         }
-        else {
-            stopService(mServiceIntent)
-            unbindService(mConnection)
-            mBound = false
-            mService?.removeListener()
-            mService = null
-            mServiceIntent = Intent(this, SongPlayerService::class.java)
-            bindService(mServiceIntent, mConnection, Context.BIND_AUTO_CREATE)
-        }
     }
 
 
-    fun play(songList: MutableList<AVoiceNote>?, song: AVoiceNote) {
+    fun play(songList: MutableList<AbstractAudio>?, song: AbstractAudio) {
         msg = ACTION_PLAY_SONG_IN_LIST
         mSong = song
         mSongList = songList
-        if (mService == null)audioPlayerViewModel.setPlayStatus(true) else {
-            audioPlayerViewModel.setPlayStatus(false)
+//        audioPlayerViewModel.setPlayStatus(true)
+
+//        if (mService == null) else {
+//            audioPlayerViewModel.setPlayStatus(false)
+//        }
+
+        if (mService == null) bindPlayerService()
+        else {
+            mHandler.sendEmptyMessage(msg)
+            Log.d(TAG,"thread ${Thread.currentThread().name}")
         }
-        bindPlayerService()
-//        else {toggle()}
     }
 
     private fun pause() {
@@ -112,9 +111,13 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
         mService?.skipToPrevious()
     }
 
-    fun toggle() {
-        if (audioPlayerViewModel.isPlayData.value == true) pause()
-        else audioPlayerViewModel.playerData.value?.let { it1 -> play(mSongList, it1) }
+    fun toggle(
+        playlist: MutableList<AbstractAudio>,
+        audio: AbstractAudio
+    ) {
+        if (audio == mSong && audioPlayerViewModel.isPlayData.value == true) pause()
+        else play(playlist,audio)
+//            audioPlayerViewModel.playerData.value?.let { it1 -> play(playlist, it1) }
     }
 
     fun seekTo(position: Long?) {
@@ -124,7 +127,7 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
         }
     }
 
-    fun addNewPlaylistToCurrent(songList: ArrayList<AVoiceNote>) {
+    fun addNewPlaylistToCurrent(songList: MutableList<AbstractAudio>) {
         mService?.addNewPlaylistToCurrent(songList)
     }
 
@@ -143,7 +146,7 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
         audioPlayerViewModel.repeat()
     }
 
-    override fun updateSongData(song: AVoiceNote) {
+    override fun updateSongData(song: AbstractAudio) {
         audioPlayerViewModel.updateSong(song)
     }
 

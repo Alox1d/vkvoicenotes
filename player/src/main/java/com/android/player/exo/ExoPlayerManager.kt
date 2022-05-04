@@ -10,7 +10,8 @@ import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import com.android.player.model.AVoiceNote
+import android.util.Log
+import com.android.player.model.AbstractAudio
 import com.android.player.service.SongPlayerService
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.C.CONTENT_TYPE_MUSIC
@@ -18,7 +19,6 @@ import com.google.android.exoplayer2.C.USAGE_MEDIA
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
-import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
@@ -37,7 +37,7 @@ class ExoPlayerManager(val context: Context) : OnExoPlayerManagerCallback {
     private val mAudioNoisyIntentFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
     private var mExoSongStateCallback: OnExoPlayerManagerCallback.OnSongStateCallback? = null
     private var mAudioNoisyReceiverRegistered: Boolean = false
-    private var mCurrentSong: AVoiceNote? = null
+    private var mCurrentSong: AbstractAudio? = null
     private var mCurrentAudioFocusState = AUDIO_NO_FOCUS_NO_DUCK
     private var mExoPlayer: SimpleExoPlayer? = null
     private var mPlayOnFocusGain: Boolean = false
@@ -134,12 +134,12 @@ class ExoPlayerManager(val context: Context) : OnExoPlayerManagerCallback {
         return mExoPlayer?.currentPosition ?: 0
     }
 
-    override fun play(aSong: AVoiceNote) {
+    override fun play(aSong: AbstractAudio) {
         mPlayOnFocusGain = true
         tryToGetAudioFocus()
         registerAudioNoisyReceiver()
 
-        val songHasChanged = aSong.noteId != mCurrentSong?.noteId
+        val songHasChanged = aSong.audioId != mCurrentSong?.audioId
         if (songHasChanged) mCurrentSong = aSong
 
         if (songHasChanged || mExoPlayer == null) {
@@ -170,7 +170,8 @@ class ExoPlayerManager(val context: Context) : OnExoPlayerManagerCallback {
             val extractorMediaFactory = ExtractorMediaSource.Factory(dataSourceFactory)
             extractorMediaFactory.setExtractorsFactory(extractorsFactory)
 
-            val mediaSource = when (mCurrentSong?.noteType) {
+            val mediaSource =
+                when (mCurrentSong?.audioType) {
                 C.TYPE_OTHER ->
                     ExtractorMediaSource.Factory(dataSourceFactory)
                         .createMediaSource(Uri.parse(source))
@@ -179,13 +180,12 @@ class ExoPlayerManager(val context: Context) : OnExoPlayerManagerCallback {
                     val uri = Uri.fromFile(file)
                     ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(uri))
                 }
-
             }
 
             // Prepares media to play (happens on background thread) and triggers
             // {@code onPlayerStateChanged} callback when the stream is ready to play.
             mExoPlayer?.prepare(mediaSource)
-
+            Log.d(TAG,"thread ${Thread.currentThread().name}")
             // If we are streaming from the internet, we want to hold a
             // Wifi lock, which prevents the Wifi radio from going to
             // sleep while the song is playing.
