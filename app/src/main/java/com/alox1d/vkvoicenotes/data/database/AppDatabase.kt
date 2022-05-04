@@ -8,7 +8,7 @@ import com.alox1d.vkvoicenotes.data.model.VoiceNoteDTO
 import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 import com.alox1d.vkvoicenotes.internal.DATABASE_NAME
 
-@Database(entities = [VoiceNoteDTO::class], version = 6)
+@Database(entities = [VoiceNoteDTO::class], version = 7)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun voiceNotesDao(): VoiceNoteDAO
 

@@ -11,7 +11,6 @@ import android.os.Message
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.android.player.AudioPlayerViewModel.Companion.getPlayerViewModelInstance
-import com.android.player.exo.ExoPlayerManager
 import com.android.player.model.AbstractAudio
 import com.android.player.service.OnPlayerServiceCallback
 import com.android.player.service.SongPlayerService
@@ -20,11 +19,11 @@ import com.android.player.service.SongPlayerService
 open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback {
 
 
-    private var mService: SongPlayerService? = null
+    private var mPlayService: SongPlayerService? = null
     private var mServiceIntent: Intent? = null
     private var mBound = false
     private var mSong: AbstractAudio? = null
-    private var mSongList: MutableList<AbstractAudio>? = null
+    private var mSongList: List<AbstractAudio>? = null
     private var msg = 0
     val audioPlayerViewModel: AudioPlayerViewModel = getPlayerViewModelInstance()
 
@@ -32,10 +31,10 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
     private val mHandler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                ACTION_PLAY_SONG_IN_LIST -> mService?.play(mSongList, mSong)
-                ACTION_PAUSE -> mService?.pause()
+                ACTION_PLAY_SONG_IN_LIST -> mPlayService?.play(mSongList, mSong)
+                ACTION_PAUSE -> mPlayService?.pause()
                 ACTION_STOP -> {
-                    mService?.stop()
+                    mPlayService?.stop()
                     audioPlayerViewModel.stop()
                 }
             }
@@ -50,17 +49,17 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             // We've bound to SongPlayerService, cast the IBinder and get SongPlayerService instance
             val binder = service as SongPlayerService.LocalBinder
-            mService = binder.service
+            mPlayService = binder.service
             mBound = true
-            mService?.subscribeToSongPlayerUpdates()
+            mPlayService?.subscribeToSongPlayerUpdates()
             mHandler.sendEmptyMessage(msg)
-            mService?.addListener(this@BaseSongPlayerActivity)
+            mPlayService?.setOnPlayStatusChangedListener(this@BaseSongPlayerActivity)
         }
 
         override fun onServiceDisconnected(classname: ComponentName) {
             mBound = false
-            mService?.removeListener()
-            mService = null
+            mPlayService?.removeListener()
+            mPlayService = null
         }
     }
 
@@ -72,7 +71,7 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
     }
 
 
-    fun play(songList: MutableList<AbstractAudio>?, song: AbstractAudio) {
+    fun play(songList: List<AbstractAudio>?, song: AbstractAudio) {
         msg = ACTION_PLAY_SONG_IN_LIST
         mSong = song
         mSongList = songList
@@ -82,7 +81,7 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
 //            audioPlayerViewModel.setPlayStatus(false)
 //        }
 
-        if (mService == null) bindPlayerService()
+        if (mPlayService == null) bindPlayerService()
         else {
             mHandler.sendEmptyMessage(msg)
             Log.d(TAG,"thread ${Thread.currentThread().name}")
@@ -92,27 +91,27 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
     private fun pause() {
         msg = ACTION_PAUSE
         audioPlayerViewModel.setPlayStatus(false)
-        if (mService == null) bindPlayerService()
+        if (mPlayService == null) bindPlayerService()
         else mHandler.sendEmptyMessage(msg)
     }
 
     fun stop() {
         msg = ACTION_STOP
         audioPlayerViewModel.setPlayStatus(false)
-        if (mService == null) bindPlayerService()
+        if (mPlayService == null) bindPlayerService()
         else mHandler.sendEmptyMessage(msg)
     }
 
     fun next() {
-        mService?.skipToNext()
+        mPlayService?.skipToNext()
     }
 
     fun previous() {
-        mService?.skipToPrevious()
+        mPlayService?.skipToPrevious()
     }
 
     fun toggle(
-        playlist: MutableList<AbstractAudio>,
+        playlist: List<AbstractAudio>,
         audio: AbstractAudio
     ) {
         if (audio == mSong && audioPlayerViewModel.isPlayData.value == true) pause()
@@ -123,26 +122,26 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
     fun seekTo(position: Long?) {
         position?.let { nonNullPosition ->
             audioPlayerViewModel.seekTo(nonNullPosition)
-            mService?.seekTo(nonNullPosition)
+            mPlayService?.seekTo(nonNullPosition)
         }
     }
 
     fun addNewPlaylistToCurrent(songList: MutableList<AbstractAudio>) {
-        mService?.addNewPlaylistToCurrent(songList)
+        mPlayService?.addNewPlaylistToCurrent(songList)
     }
 
     fun shuffle() {
-        mService?.onShuffle(audioPlayerViewModel.isShuffleData.value ?: false)
+        mPlayService?.onShuffle(audioPlayerViewModel.isShuffleData.value ?: false)
         audioPlayerViewModel.shuffle()
     }
 
     fun repeatAll() {
-        mService?.onRepeatAll(audioPlayerViewModel.isRepeatAllData.value ?: false)
+        mPlayService?.onRepeatAll(audioPlayerViewModel.isRepeatAllData.value ?: false)
         audioPlayerViewModel.repeatAll()
     }
 
     fun repeat() {
-        mService?.onRepeat(audioPlayerViewModel.isRepeatData.value ?: false)
+        mPlayService?.onRepeat(audioPlayerViewModel.isRepeatData.value ?: false)
         audioPlayerViewModel.repeat()
     }
 
@@ -175,7 +174,7 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
 
     override fun stopService(){
         unbindService()
-        mService = null
+        mPlayService = null
     }
 
     override fun onDestroy() {
@@ -187,7 +186,7 @@ open class BaseSongPlayerActivity : AppCompatActivity(), OnPlayerServiceCallback
     companion object {
 
         private val TAG = BaseSongPlayerActivity::class.java.name
-        const val SONG_LIST_KEY = "SONG_LIST_KEY"
+        const val AUDIO_LIST_KEY = "SONG_LIST_KEY"
         private const val ACTION_PLAY_SONG_IN_LIST = 1
         private const val ACTION_PAUSE = 2
         private const val ACTION_STOP = 3

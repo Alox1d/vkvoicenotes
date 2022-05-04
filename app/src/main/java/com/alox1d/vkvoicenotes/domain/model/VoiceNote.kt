@@ -8,7 +8,7 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
  data class VoiceNote(
-    var id: Int = 0,
+    var id: Long = 0,
     val name: String?,
     val path: String,
     val duration: String?,

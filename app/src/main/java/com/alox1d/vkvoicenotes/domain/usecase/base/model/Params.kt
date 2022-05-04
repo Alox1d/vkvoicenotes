@@ -7,5 +7,4 @@ interface Parameters
 class DeleteParams(val voiceNote: VoiceNote) : Parameters
 class SyncParams(val voiceNotes: List<VoiceNote>) : Parameters
 class SaveParams(val voiceNote: VoiceNote) : Parameters
-
-class GetUserDetailsParams(val id: Long): Parameters
+class UpdateParams(val voiceNote: VoiceNote) : Parameters

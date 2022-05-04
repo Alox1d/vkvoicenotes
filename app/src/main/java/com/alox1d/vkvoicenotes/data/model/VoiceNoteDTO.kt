@@ -10,7 +10,7 @@ import kotlinx.android.parcel.Parcelize
 @Entity
 @Parcelize
 data class VoiceNoteDTO(
-    @PrimaryKey(autoGenerate = true) var id: Int = 0,
+    @PrimaryKey(autoGenerate = true) var id: Long = 0,
     val name: String?,
     val path: String,
     val duration: String?,

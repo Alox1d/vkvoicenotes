@@ -8,7 +8,6 @@ import com.android.musicplayer.domain.repository.VoiceListRepository
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Maybe
-import io.reactivex.Single
 
 class VoiceListRepositoryImp(
     private val appDatabase: AppDatabase,
@@ -24,15 +23,17 @@ class VoiceListRepositoryImp(
         return appDatabase.voiceNotesDao().loadAll().map { list -> list.map { mapper.mapToDomain(it) } }
     }
 
-    override fun saveVoiceNotes(voiceNote: VoiceNote): Maybe<Long> {
-        return appDatabase.voiceNotesDao().insert(mapper.mapToDTO(voiceNote))
+    override fun saveVoiceNotes(note: VoiceNote): Maybe<Long> {
+        return appDatabase.voiceNotesDao().insert(mapper.mapToDTO(note))
     }
+
+    override fun updateVoiceNote(note: VoiceNote): Maybe<Int> {
+        return appDatabase.voiceNotesDao().update(mapper.mapToDTO(note))
+    }
+
     override fun syncVoicesNotes(notes: List<VoiceNote>):Completable {
         return Completable.fromCallable {
-            (notes.map { VKService().uploadDoc(mapper.mapToDTO(it)) })
-//            map{
-//                Uri.parse(PathUtils.getPath(this, it.mapToDTO().path))
-//                 })
+            (notes.map { VKService().uploadNote(mapper.mapToDTO(it)) })
         }
 
     }

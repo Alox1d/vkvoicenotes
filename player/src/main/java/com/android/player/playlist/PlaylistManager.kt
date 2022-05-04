@@ -61,7 +61,7 @@ class PlaylistManager(private val mListener: OnSongUpdateListener) {
         }
     }
 
-    fun setCurrentPlaylist(newPlaylist: MutableList<AbstractAudio>, initialSong: AbstractAudio? = null) {
+    fun setCurrentPlaylist(newPlaylist: List<AbstractAudio>, initialSong: AbstractAudio? = null) {
         playlist = Playlist().setList(newPlaylist)
         var index = 0
         initialSong?.let {

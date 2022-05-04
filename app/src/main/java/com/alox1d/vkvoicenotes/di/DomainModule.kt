@@ -1,14 +1,7 @@
 package com.alox1d.vkvoicenotes.di
 
-import android.app.Application
-import com.alox1d.vkvoicenotes.data.database.AppDatabase
-import com.alox1d.vkvoicenotes.data.database.VoiceNoteDAO
-import com.alox1d.vkvoicenotes.data.repository.VoiceListRepositoryImp
 import com.android.musicplayer.domain.repository.VoiceListRepository
-import com.android.musicplayer.domain.usecase.DeleteNoteUseCase
-import com.android.musicplayer.domain.usecase.GetNotesUseCase
-import com.android.musicplayer.domain.usecase.SaveNoteDataUseCase
-import com.android.musicplayer.domain.usecase.SyncNotesUseCase
+import com.android.musicplayer.domain.usecase.*
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -53,5 +46,13 @@ class DomainModule {
         voiceListRepository: VoiceListRepository
     ): SyncNotesUseCase {
         return SyncNotesUseCase(voiceListRepository)
+    }
+
+    @Singleton
+    @Provides
+    fun provideUpdateNoteUseCase(
+        voiceListRepository: VoiceListRepository
+    ): UpdateNoteDataUseCase {
+        return UpdateNoteDataUseCase(voiceListRepository)
     }
 }

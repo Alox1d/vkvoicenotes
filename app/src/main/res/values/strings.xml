@@ -6,6 +6,14 @@
     <string name="no">Нет</string>
     <string name="you_denied_permission">Вы отклонили разрешение</string>
     <string name="sync_vk">VK</string>
+    <string name="toast_recording_start">Идёт запись</string>
+    <string name="ready">Готово</string>
+    <string name="toast_recording_saved">Запись остановлена</string>
+    <string name="default_recording_file_prefix">Запись </string>
+    <string name="recordings_folder_name">Recordings</string>
+    <string name="notification_channel_description_recorder">Запись</string>
+    <string name="sync_ok">Синхронизация успешна</string>
+    <string name="sync_error">Синхронизация не удалась</string>
 
     <integer name="com_vk_sdk_AppId">8147676</integer>
 </resources>

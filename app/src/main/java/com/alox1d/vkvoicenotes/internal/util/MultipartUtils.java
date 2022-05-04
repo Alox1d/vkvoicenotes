@@ -1,4 +1,4 @@
-package com.alox1d.vkvoicenotes.internal;
+package com.alox1d.vkvoicenotes.internal.util;
 
 
 import java.io.BufferedReader;

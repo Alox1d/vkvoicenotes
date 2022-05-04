@@ -17,9 +17,9 @@ class Playlist {
 
     fun getCurrentPlaylistSize(): Int = getShuffleOrNormalList().size
 
-    fun setList(list: MutableList<AbstractAudio>): Playlist {
+    fun setList(list: List<AbstractAudio>): Playlist {
         clearList()
-        this.list = list
+        this.list = list.toMutableList()
 //        list.shuffle()
         this.shuffleList = ArrayList(list)
         return this

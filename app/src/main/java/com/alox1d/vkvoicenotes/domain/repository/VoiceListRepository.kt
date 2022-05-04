@@ -13,6 +13,8 @@ interface VoiceListRepository {
 
     fun saveVoiceNotes(note: VoiceNote):Maybe<Long>
 
+    fun updateVoiceNote(note: VoiceNote):Maybe<Int>
+
     fun getVoiceNotes(): Flowable<List<VoiceNote>>
 
     fun delete(voiceNote: VoiceNote): Completable

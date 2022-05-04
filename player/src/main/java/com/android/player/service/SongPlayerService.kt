@@ -47,7 +47,7 @@ class SongPlayerService : Service(), OnMediaAdapterCallback {
         ContextCompat.startForegroundService(applicationContext, Intent(this, SongPlayerService::class.java))
     }
 
-    fun addListener(callback: OnPlayerServiceCallback) {
+    fun setOnPlayStatusChangedListener(callback: OnPlayerServiceCallback) {
         mCallback = callback
     }
 
@@ -89,7 +89,7 @@ class SongPlayerService : Service(), OnMediaAdapterCallback {
         song?.let { mMediaAdapter?.play(it) }
     }
 
-    fun play(songList: MutableList<AbstractAudio>?, song: AbstractAudio?) {
+    fun play(songList: List<AbstractAudio>?, song: AbstractAudio?) {
         song?.let { nonNullSong->
             songList?.let { mMediaAdapter?.play(it, nonNullSong) } ?: play(nonNullSong)
         }

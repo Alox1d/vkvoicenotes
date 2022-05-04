@@ -163,7 +163,7 @@ constructor(private val mService: SongPlayerService) : BroadcastReceiver() {
                 putExtra(AbstractAudio::class.java.name, it) // Нужен Parcelable
             }
             mService.getCurrentSongList()?.let {
-                putExtra(BaseSongPlayerActivity.SONG_LIST_KEY, it)
+                putExtra(BaseSongPlayerActivity.AUDIO_LIST_KEY, it)
             }
         }
 
@@ -318,7 +318,7 @@ constructor(private val mService: SongPlayerService) : BroadcastReceiver() {
             val notificationChannel = NotificationChannel(
                 CHANNEL_ID,
                 mService.getString(R.string.notification_channel),
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_DEFAULT
             )
             notificationChannel.description =
                 mService.getString(R.string.notification_channel_description)

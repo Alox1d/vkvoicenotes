@@ -1,6 +1,7 @@
 package com.alox1d.vkvoicenotes.data.remote
 
 import android.net.Uri
+import android.os.FileUtils
 import com.alox1d.vkvoicenotes.data.model.*
 import com.vk.api.sdk.VKApiJSONResponseParser
 import com.vk.api.sdk.VKApiManager
@@ -11,10 +12,11 @@ import com.vk.api.sdk.internal.ApiCommand
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
+import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 
 
-class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
+class VKDocsCommand(private val name: String, private val uri: Uri) : ApiCommand<Unit>() {
 
     companion object {
         const val RETRY_COUNT = 3
@@ -23,12 +25,9 @@ class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
     override fun onExecute(manager: VKApiManager) {
 
         val uploadInfo = getServerUploadInfo(manager)
-        val fileOld = File(note.path)
-        val temp = File(note.path.dropLast(1))
-        fileOld.renameTo(temp) // TODO Где лучше выполнить переименование?
-        val uriTemp = Uri.fromFile(temp) // Todo Где лучше преобразовывать в Uri?
-        uploadDoc(note.name ?: "", uriTemp, uploadInfo, manager)
-        temp.renameTo(fileOld)
+
+        uploadDoc(name ?: "", uri, uploadInfo, manager)
+
     }
 
     private fun getServerUploadInfo(manager: VKApiManager): VKServerUploadInfo {
@@ -45,12 +44,14 @@ class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
         serverUploadInfo: VKServerUploadInfo,
         manager: VKApiManager
     ): String {
+
         val fileUploadCall = VKHttpPostCall.Builder()
             .url(serverUploadInfo.uploadUrl)
-            .args("file", uri, name.dropLast(1))
+            .args("file", uri, name)
             .timeout(TimeUnit.MINUTES.toMillis(5))
             .retryCount(RETRY_COUNT)
             .build()
+
         // Send file using MultipartUtils:
         // val multipart = MultipartUtility(serverUploadInfo.uploadUrl, "UTF-8")
         // multipart.addFilePart("file", file);
@@ -85,7 +86,6 @@ class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
         override fun parse(responseJson: JSONObject): VKFileUploadInfo {
             try {
                 val joResponse = responseJson
-
                 return VKFileUploadInfo(
                     file = joResponse.getString("file"),
                 )

@@ -8,7 +8,7 @@ import com.alox1d.vkvoicenotes.R
 import com.alox1d.vkvoicenotes.databinding.ItemRecyclerBinding
 import com.alox1d.vkvoicenotes.domain.model.VoiceNote
 import kotlin.properties.Delegates
-
+//TODO DiffUtils
 class VoiceNotesAdapter(
     val mListener: OnVoiceListAdapterListener
 ) : RecyclerView.Adapter<VoiceNotesAdapter.NoteViewHolder>() {
