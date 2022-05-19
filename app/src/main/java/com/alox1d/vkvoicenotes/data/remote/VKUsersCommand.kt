@@ -51,10 +51,6 @@ class VKUsersCommand(private val note: VoiceNoteDTO) : ApiCommand<Unit>() {
             .timeout(TimeUnit.MINUTES.toMillis(5))
             .retryCount(RETRY_COUNT)
             .build()
-        // Send file using MultipartUtils:
-        // val multipart = MultipartUtility(serverUploadInfo.uploadUrl, "UTF-8")
-        // multipart.addFilePart("file", file);
-        // val response = multipart.finish()
         val fileUploadInfo = manager.execute(fileUploadCall, null, FileUploadInfoParser())
 
         val saveCall = VKMethodCall.Builder()

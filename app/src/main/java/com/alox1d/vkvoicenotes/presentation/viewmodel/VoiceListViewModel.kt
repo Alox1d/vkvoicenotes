@@ -128,7 +128,7 @@ class VoiceListViewModel(
                 _isSyncError.postValue(true)
                 _isSyncError.postValue(false)
             },
-            p = SyncParams(it)
+            params = SyncParams(it)
             )
         }
 
