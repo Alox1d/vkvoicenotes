@@ -12,7 +12,7 @@ import kotlin.math.max
  **/
 class PlaylistManager(private val mListener: OnSongUpdateListener) {
 
-    private var playlist: Playlist? = null // TODO Why empty?
+    private var playlist: Playlist? = null
     private var mCurrentIndex: Int = 0
 
 

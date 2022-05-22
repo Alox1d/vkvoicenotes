@@ -4,10 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.alox1d.vkvoicenotes.domain.model.VoiceNote
+import com.alox1d.vkvoicenotes.domain.usecase.base.model.DeleteParams
+import com.alox1d.vkvoicenotes.domain.usecase.base.model.SaveParams
+import com.alox1d.vkvoicenotes.domain.usecase.base.model.SyncParams
 import com.android.musicplayer.domain.usecase.DeleteNoteUseCase
 import com.android.musicplayer.domain.usecase.GetNotesUseCase
 import com.android.musicplayer.domain.usecase.SaveNoteDataUseCase
-import io.reactivex.disposables.CompositeDisposable
+import com.android.musicplayer.domain.usecase.SyncNotesUseCase
 import javax.inject.Inject
 
 class VoiceListViewModel(
@@ -18,12 +21,13 @@ class VoiceListViewModel(
     lateinit var saveAudioDataUseCase: SaveNoteDataUseCase
 
     @Inject
-    lateinit var getAudiosUseCase: GetNotesUseCase
+    lateinit var getVoicesUseCase: GetNotesUseCase
 
     @Inject
     lateinit var deleteNoteUseCase: DeleteNoteUseCase
 
-    private val compositeDisposable by lazy { CompositeDisposable() }
+    @Inject
+    lateinit var syncNotesUseCase: SyncNotesUseCase
 
     private val _playingState = MutableLiveData<PlayingState>()
     val playingState: LiveData<PlayingState>
@@ -35,6 +39,13 @@ class VoiceListViewModel(
     private val _isNameSet = MutableLiveData(false)
     val isNameSet: LiveData<Boolean>
         get() = _isNameSet
+
+    private val _isSyncSuccess = MutableLiveData(false)
+    val isSyncSuccess: LiveData<Boolean>
+        get() = _isSyncSuccess
+    private val _isSyncError = MutableLiveData(false)
+    val isSyncError: LiveData<Boolean>
+        get() = _isSyncError
 
     fun toggleNote(note: VoiceNote) {
         val list = _playingState.value?.playlist?.map {
@@ -67,27 +78,32 @@ class VoiceListViewModel(
     fun saveVoiceData(note: VoiceNote) {
         _isNameSet.value = _isNameSet.value != true
 
-        saveAudioDataUseCase.saveNoteItem(note)
-        val list: MutableList<VoiceNote> =
-            _playingState.value?.playlist?.toMutableList() ?: mutableListOf()
-        list.add(note)
-        _playingState.value = PlayingState(list)
+//        saveAudioDataUseCase.setNote(note)
+        saveAudioDataUseCase.execute({},{},{}, params = SaveParams(note))
     }
 
     fun getVoiceNotesFromDB() {
-        _playingState.value = PlayingState(getAudiosUseCase.getAudios() ?: emptyList())
+        getVoicesUseCase.execute(
+            onNext = {
+                _playingState.postValue(PlayingState(it))
+            },
+            onError = {
+                it.printStackTrace()
+            }
+        )
     }
 
     fun removeItemFromList(note: VoiceNote) {
-        deleteNoteUseCase.deleteSongItem(note)
-        val list = _playingState.value?.playlist as? MutableList<VoiceNote> ?: mutableListOf()
-        list.remove(note)
-        _playingState.value = PlayingState(list)
+//        deleteNoteUseCase.setNote(note)
+        deleteNoteUseCase.execute({},{}, DeleteParams(note))
+//        val list = _playingState.value?.playlist as? MutableList<VoiceNote> ?: mutableListOf()
+//        list.remove(note)
+//        _playingState.value = PlayingState(list)
     }
 
     override fun onCleared() {
         super.onCleared()
-        compositeDisposable.clear()
+        getVoicesUseCase.dispose()
     }
 
     fun onToggleRecord() {
@@ -96,6 +112,26 @@ class VoiceListViewModel(
 
     fun onNameSet() {
         _isNameSet.value = _isNameSet.value != true
+
+    }
+
+    fun syncVK() {
+        playingState.value?.playlist?.let {
+//            syncNotesUseCase.addNotes(
+//                it
+//        )
+            syncNotesUseCase.execute(
+                onComplete = {
+               _isSyncSuccess.postValue(true) // Как лучше оформить данные отображения успеха/ошибки в UI? Sealed-классами?
+            },
+                onError = {
+                _isSyncError.postValue(true)
+                _isSyncError.postValue(false)
+            },
+            params = SyncParams(it)
+            )
+        }
+
 
     }
 }
