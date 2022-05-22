@@ -2,9 +2,8 @@ package com.alox1d.vkvoicenotes.domain.model
 
 import android.net.Uri
 import android.os.Parcelable
-import android.speech.tts.Voice
 import com.android.player.model.AbstractAudio
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
  data class VoiceNote(

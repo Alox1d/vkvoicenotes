@@ -16,10 +16,10 @@ abstract class CompletableUseCase<P : Parameters> : UseCase() {
     fun execute(
         onComplete: () -> Unit = {},
         onError: ((t: Throwable) -> Unit),
-        p:P
+        params:P
     ) {
         disposeLast()
-        lastDisposable = buildUseCaseCompletable(p)
+        lastDisposable = buildUseCaseCompletable(params)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(onComplete, onError)

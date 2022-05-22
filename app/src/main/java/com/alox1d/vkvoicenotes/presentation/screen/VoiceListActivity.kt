@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
@@ -228,6 +229,14 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                 voiceListViewModel.saveVoiceData(it)
             }
         }
+        viewModel.isSyncSuccess.observe(this){
+            if (it)
+            Toast.makeText(this, "Синхронизация успешна", Toast.LENGTH_SHORT).show()
+        }
+        viewModel.isSyncError.observe(this){
+            if (it)
+            Toast.makeText(this, "Синхронизация не удалась", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun stopRecording() {
@@ -334,4 +343,24 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         return false
     }
 
+            override fun onLogin(token: VKAccessToken) {
+                // User passed authorization
+                Log.i(TAG, "onLogin: success")
+
+                viewModel.syncVK()
+
+            }
+
+            override fun onLoginFailed(authException: VKAuthException) {
+                Log.i(TAG, "onLogin: error")
+            }
+        }
+        if (data == null || !VK.onActivityResult(requestCode, resultCode, data, callback)) {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    companion object {
+        private val TAG = VoiceListActivity::class.java.name
+    }
 }

@@ -1,6 +1,7 @@
 package com.alox1d.vkvoicenotes.data.repository
 
 import com.alox1d.vkvoicenotes.data.database.AppDatabase
+import com.alox1d.vkvoicenotes.data.remote.VKService
 import com.alox1d.vkvoicenotes.data.model.VoiceNoteMapper
 import com.alox1d.vkvoicenotes.data.remote.VKService
 import com.alox1d.vkvoicenotes.domain.model.VoiceNote
@@ -22,7 +23,6 @@ class VoiceListRepositoryImp(
         // map вынесен в репозиторий, остальное - в use-case (base)
         return appDatabase.voiceNotesDao().loadAll().map { list -> list.map { mapper.mapToDomain(it) } }
     }
-
     override fun saveVoiceNotes(note: VoiceNote): Maybe<Long> {
         return appDatabase.voiceNotesDao().insert(mapper.mapToDTO(note))
     }
@@ -36,5 +36,4 @@ class VoiceListRepositoryImp(
             (notes.map { VKService().uploadNote(mapper.mapToDTO(it)) })
         }
 
-    }
 }

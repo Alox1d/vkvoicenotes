@@ -2,6 +2,10 @@ package com.alox1d.vkvoicenotes.di
 
 import com.android.musicplayer.domain.repository.VoiceListRepository
 import com.android.musicplayer.domain.usecase.*
+import com.android.musicplayer.domain.usecase.DeleteNoteUseCase
+import com.android.musicplayer.domain.usecase.GetNotesUseCase
+import com.android.musicplayer.domain.usecase.SaveNoteDataUseCase
+import com.android.musicplayer.domain.usecase.SyncNotesUseCase
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

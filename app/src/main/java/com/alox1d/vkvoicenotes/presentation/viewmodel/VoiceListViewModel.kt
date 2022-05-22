@@ -63,6 +63,13 @@ class VoiceListViewModel : ViewModel(
         get() = _savingNote
 
 
+    private val _isSyncSuccess = MutableLiveData(false)
+    val isSyncSuccess: LiveData<Boolean>
+        get() = _isSyncSuccess
+    private val _isSyncError = MutableLiveData(false)
+    val isSyncError: LiveData<Boolean>
+        get() = _isSyncError
+
     fun toggleNote(note: VoiceNote) {
         val list = _playingState.value?.playlist?.map {
             val isPlaying = if (it == note) !it.isPlaying else false
@@ -165,7 +172,7 @@ class VoiceListViewModel : ViewModel(
                     _isSyncError.postValue(true)
 //                _isSyncError.postValue(false)
                 },
-                p = SyncParams(it)
+                params = SyncParams(it)
             )
         }
     }
