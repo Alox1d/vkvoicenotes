@@ -4,7 +4,7 @@ import android.os.Parcelable
 
 abstract class AbstractAudio(
     @Transient
-    var audioId: Int,
+    var audioId: Long,
     var title: String? = "",
     var source: String? = "",
     var audioType: Int = 0,

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_height="wrap_content">
 
-<!--    <ImageView-->
-<!--        android:id="@+id/collapsed_notification_image_view"-->
-<!--        android:layout_width="72dp"-->
-<!--        android:layout_height="72dp"-->
-<!--        android:layout_alignParentStart="true"-->
-<!--        android:layout_alignParentLeft="true"-->
-<!--        android:adjustViewBounds="true"-->
-<!--        android:scaleType="fitXY" />-->
+    <!--    <ImageView-->
+    <!--        android:id="@+id/collapsed_notification_image_view"-->
+    <!--        android:layout_width="72dp"-->
+    <!--        android:layout_height="72dp"-->
+    <!--        android:layout_alignParentStart="true"-->
+    <!--        android:layout_alignParentLeft="true"-->
+    <!--        android:adjustViewBounds="true"-->
+    <!--        android:scaleType="fitXY" />-->
 
     <ImageView
         android:id="@+id/collapsed_notification_clear_image_view"
@@ -19,13 +19,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/baseline_clear_black_18" />
+        android:layout_centerInParent="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/baseline_clear_black_48"
+
+        />
 
     <TextView
         android:id="@+id/collapsed_notification_song_name_text_view"
@@ -36,7 +36,7 @@
         android:layout_marginEnd="8dp"
         android:layout_toEndOf="@+id/collapsed_notification_controller_container"
         android:textAlignment="center"
-        android:textColor="@color/colorTextPrimary"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="@dimen/body1"
         tools:text="Запись"
 
@@ -49,10 +49,11 @@
         android:layout_below="@+id/collapsed_notification_song_name_text_view"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_toEndOf="@+id/collapsed_notification_controller_container"
         android:text="Запись"
         android:textAlignment="center"
-        android:textColor="@color/colorTextSecondary"
-        android:layout_toEndOf="@+id/collapsed_notification_controller_container"
+        android:textColor="?android:attr/textColorPrimary"
+        android:alpha="0.7"
         android:textSize="@dimen/caption" />
 
     <RelativeLayout
@@ -60,10 +61,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="24dp"
         android:layout_marginTop="8dp"
-        >
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="24dp">
 
 
         <ImageView
@@ -74,7 +74,8 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/baseline_pause_black_48" />
+            android:src="@drawable/ic_pause_vector"
+            />
 
         <ImageView
             android:id="@+id/collapsed_notification_play_image_view"
@@ -85,7 +86,9 @@
             android:layout_marginEnd="16dp"
             android:scaleType="fitCenter"
 
-            android:src="@drawable/baseline_play_arrow_black_48" />
+            android:src="@drawable/ic_play_vector"
+
+            />
 
         <!--        <ImageView-->
         <!--            android:id="@+id/collapsed_notification_skip_back_image_view"-->

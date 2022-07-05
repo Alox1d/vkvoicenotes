@@ -27,7 +27,7 @@ class MediaAdapter(
         onExoPlayerManagerCallback.play(song)
     }
 
-    fun play(songList: MutableList<AbstractAudio>, song: AbstractAudio) {
+    fun play(songList: List<AbstractAudio>, song: AbstractAudio) {
         playlistManager?.setCurrentPlaylist(songList, song)
     }
 

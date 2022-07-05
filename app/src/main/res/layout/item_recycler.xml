@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        app:cardBackgroundColor="@color/vK_grey"
+        app:cardBackgroundColor="?android:colorBackground"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp">
 
@@ -44,6 +44,7 @@
                 android:layout_marginEnd="16dp"
                 android:text="@{data.name}"
                 style="@style/TextAppearance.MaterialComponents.Headline6"
+                android:textColor="?android:textColorPrimary"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -56,7 +57,7 @@
                 android:layout_marginEnd="16dp"
                 android:maxLines="4"
                 formatTime="@{data.date}"
-                android:textColor="@android:color/black"
+                android:textColor="?android:textColorPrimary"
                 android:textSize="12sp"
                 android:alpha="0.7"
                 app:layout_constraintEnd_toEndOf="parent"

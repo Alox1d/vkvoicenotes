@@ -1,19 +1,18 @@
 package com.alox1d.vkvoicenotes.presentation.screen
 
 import android.Manifest
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.MediaRecorder
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.NonNull
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -22,10 +21,15 @@ import com.alox1d.vkvoicenotes.R
 import com.alox1d.vkvoicenotes.databinding.ActivityMainBinding
 import com.alox1d.vkvoicenotes.databinding.DialogSetFileNameBinding
 import com.alox1d.vkvoicenotes.domain.model.VoiceNote
-import com.alox1d.vkvoicenotes.internal.REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE
+import com.alox1d.vkvoicenotes.internal.REQUEST_PERMISSION_RECORD
+import com.alox1d.vkvoicenotes.internal.util.rotateTo180
+import com.alox1d.vkvoicenotes.internal.util.rotateToDefault
 import com.alox1d.vkvoicenotes.presentation.adapter.OnVoiceListAdapterListener
 import com.alox1d.vkvoicenotes.presentation.adapter.VoiceNotesAdapter
 import com.alox1d.vkvoicenotes.presentation.viewmodel.VoiceListViewModel
+import com.alox1d.vkvoicenotes.recorder.model.RecordingAudio
+import com.alox1d.vkvoicenotes.recorder.service.RecordingService
+import com.alox1d.vkvoicenotes.recorder.viewmodel.RecorderViewModel
 import com.android.player.BaseSongPlayerActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -34,25 +38,36 @@ import com.vk.api.sdk.auth.VKAccessToken
 import com.vk.api.sdk.auth.VKAuthCallback
 import com.vk.api.sdk.auth.VKScope
 import com.vk.api.sdk.exceptions.VKAuthException
-import java.io.File
-import java.io.IOException
-import java.lang.ref.WeakReference
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 
-    private lateinit var mAdapterVoiceNotes: VoiceNotesAdapter
-    private lateinit var binding: ActivityMainBinding
-    private val viewModel: VoiceListViewModel by viewModels()
+    companion object {
+        private val TAG = VoiceListActivity::class.java.name
+    }
 
-    private var fullVoiceFilePath: String = ""
-    private var voiceFilePath: String = ""
-    private var voiceFile: File? = null
-    private var voicesDirectoryPath = ""
-    private var voicesDirectory: File? = null
-    private var date: Long = -1
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var mAdapterVoiceNotes: VoiceNotesAdapter
+    private val voiceListViewModel: VoiceListViewModel by viewModels()
+    private val recorderViewModel: RecorderViewModel by viewModels()
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        val extras = intent?.extras
+        if (extras != null || extras?.containsKey(RecordingAudio::class.java.name) != true) {
+            voiceListViewModel.setRecordState(true)
+        }
+        extras?.apply {
+            if (containsKey(RecordingAudio::class.java.name)) {
+                voiceListViewModel.setRecordState(false)
+            } else {
+//                voiceListViewModel.setRecordState(true)
+            }
+        }
+        recorderViewModel.startAndBindRecordingService()
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,31 +75,37 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         val view = binding.root
         setContentView(view)
 
-        App.daggerAppComponent.inject(viewModel)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        App.daggerAppComponent.inject(voiceListViewModel)
+//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         setUpRecyclerView()
         observeLiveData()
         setUpTitle()
-        setUpPermissions()
         setUpListeners()
-        setUpNotesDirectory()
     }
 
-    private fun setUpNotesDirectory() {
-        voicesDirectoryPath =
-            getExternalFilesDir(null)?.absolutePath + File.separator + "VoiceNotes" + File.separator
-        voicesDirectory = File(voicesDirectoryPath)
-        voicesDirectory?.let{
-            if (!it.exists()){
-                it.mkdirs()
-            }
+    override fun onStart() {
+        super.onStart()
+        voiceListViewModel.getVoiceNotesFromDB()
+        //TODO При освобождении юзером приложения из списка задач,
+        // единственный способ присоединиться к записывающему сервису после нового запуска -
+        // это проверить его наличие в списке запущенных? Иначе как сделать rebind при перезапуске?
+        if (recorderViewModel.serviceRecording.value != true
+            && isMyServiceRunning(RecordingService::class.java)
+        ) {
+            recorderViewModel.setServiceRecording(true)
+            onNewIntent(intent)
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        recorderViewModel.unbindRecordService()
     }
 
     private fun setUpListeners() {
         binding.fab.setOnClickListener {
-            viewModel.onToggleRecord()
+            voiceListViewModel.onToggleRecord()
         }
     }
 
@@ -93,84 +114,35 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
             getString(R.string.notes) // под каждую ли переменную заводить LiveData?
     }
 
-    private fun setUpPermissions() {
-        if (!isReadPhoneStatePermissionGranted())
-            requestPermissions(
-                arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.RECORD_AUDIO
-                ),
-                REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE
+    private fun showEditNameDialog(defaultName: String) {
+        val bindAlert = DialogSetFileNameBinding.inflate(layoutInflater)
+        val userInput = bindAlert.editTextDialogUserInput
+        val cancel: Button = bindAlert.saveCancel
+        val ok: Button = bindAlert.saveOk
+
+        val builder =
+            MaterialAlertDialogBuilder(
+                this,
+                R.style.NotesThemeOverlay_MaterialComponents_MaterialAlertDialog
             )
-    }
+        builder.setView(bindAlert.root)
+        builder.setCancelable(false)
+        val dialog = builder.create()
 
-    protected var recorder: MediaRecorder? = null
-
-    private fun startRecording(fileName: String) {
-        // initialize and configure MediaRecorder
-        recorder = MediaRecorder()
-        recorder!!.setAudioSource(MediaRecorder.AudioSource.MIC)
-        recorder!!.setOutputFile(fileName)
-        recorder!!.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-        recorder!!.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-        try {
-            recorder!!.prepare()
-            recorder!!.start()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            // handle error
-        } catch (e: IllegalStateException) {
-            e.printStackTrace()
-            // handle error
+        userInput.hint = defaultName
+        cancel.setOnClickListener {
+            dialog.dismiss()
         }
-    }
-
-    private fun stopRecording(): Boolean {
-        // stop recording and free up resources
-        recorder?.let {
-
-            recorder!!.stop()
-            recorder!!.release()
-            recorder = null
-            val bindAlert = DialogSetFileNameBinding.inflate(layoutInflater)
-            val userInput = bindAlert.editTextDialogUserInput
-            val cancel: Button = bindAlert.saveCancel
-            val ok: Button = bindAlert.saveOk
-
-            val builder =
-                MaterialAlertDialogBuilder(
-                    this,
-                    R.style.NotesThemeOverlay_MaterialComponents_MaterialAlertDialog
-                )
-            // set prompts.xml to alertdialog builder
-            builder.setView(bindAlert.root)
-            builder.setCancelable(false)
-            val dialog = builder.create()
-            cancel.setOnClickListener {
-                dialog.dismiss()
-            }
-            ok.setOnClickListener {
-                val newFileName = userInput.text.toString()
-                if (newFileName.trim { it <= ' ' }.isNotEmpty()) {
-                    voiceFilePath = "$newFileName.aac"
-                    fullVoiceFilePath = voicesDirectoryPath + voiceFilePath
-                    val newFile = File(voicesDirectoryPath, voiceFilePath)
-                    voiceFile?.let {
-                        it.renameTo(newFile)
-                    }
-                }
-                viewModel.onNameSet()
-                dialog.dismiss()
-            }
-            dialog.show()
-            // create and show the alert dialog
-
-            return true
+        ok.setOnClickListener {
+            val newFileName = userInput.text.toString()
+            recorderViewModel.changeRecordingName(newFileName)
+            dialog.dismiss()
         }
-        return false
 
+        // create and show the alert dialog
+        dialog.show()
     }
-
+    //TODO Заменить на activity result API
     override fun onRequestPermissionsResult(
         requestCode: Int,
         @NonNull permissions: Array<String>,
@@ -178,44 +150,17 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE -> if (grantResults.isNotEmpty()) {
+            REQUEST_PERMISSION_RECORD -> if (grantResults.isNotEmpty()) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {// Permission Granted
-//                    openMusicList()
+//                    audioRecorderViewModel.startRecording()
                 } else {
                     // Permission Denied
-                    Snackbar.make(
-                        binding.recyclerView,
-                        getString(R.string.you_denied_permission),
-                        Snackbar.LENGTH_SHORT
-                    ).show()
+                    showSnackBar(R.string.you_denied_permission)
                 }
             }
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        viewModel.getVoiceNotesFromDB()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        if (stopRecording()) {
-//                    val uri: Uri = Uri.parse(file.absolutePath)
-//                    val mmr = MediaMetadataRetriever()
-//                    mmr.setDataSource(application, uri)
-//                    val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-//                    val millSecond = durationStr!!
-            val note = VoiceNote(
-                name = voiceFilePath,
-                path = fullVoiceFilePath,
-                duration = "",
-                date = date
-            )
-            viewModel.saveVoiceData(note)
-        }
-
-    }
 
     private fun setUpRecyclerView() {
         mAdapterVoiceNotes = VoiceNotesAdapter(this)
@@ -227,83 +172,83 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
     }
 
     private fun observeLiveData() {
-        viewModel.playingState.observe(this) {
-            mAdapterVoiceNotes.notes = it.playlist
-            if (it.playingNote != null && it.playingNote.isPlaying) toggle(
-                it.playlist.toMutableList(),
-                it.playingNote
-            )
-        }
         audioPlayerViewModel.isPlayData.observe(this) {
-            viewModel.setNotePlayStatus(it)
+            voiceListViewModel.setNotePlayStatus(it)
 //            mAdapterVoiceNotes.playingViewHolder?.itemBinding?.playButton?.setImageResource(
 //                if (it) R.drawable.ic_pause_vector else R.drawable.ic_play_vector)
         }
-        viewModel.recording.observe(this) {
+        voiceListViewModel.playingState.observe(this) {
+            mAdapterVoiceNotes.notes = it.playlist
+            if (it.playingNote != null && it.playingNote.isPlaying) toggle(
+                it.playlist,
+                it.playingNote
+            )
+        }
+        voiceListViewModel.onRecording.observe(this) {
             if (it) {
                 if (isRecordPermissionGranted()) {
-                    // TODO 1
-                    date = Calendar.getInstance().timeInMillis
-                    voiceFilePath =
-                        "Запись " + SimpleDateFormat("dd.MM.yy HH:mm:ss").format(date) + ".aac"
-                    fullVoiceFilePath = voicesDirectoryPath + voiceFilePath
-                    voiceFile = File(voicesDirectory, voiceFilePath)
-                    val snack = Snackbar.make(binding.root, "НАЧАТА ЗАПИСЬ", Snackbar.LENGTH_LONG)
-                    snack.setAction("ОК", View.OnClickListener {
-                        snack.dismiss()
-                    })
-                    snack.show()
-                    binding.fab.animate().setDuration(200).rotation(180f)
-                    startRecording(fullVoiceFilePath)
 
+                    recorderViewModel.startAndBindRecordingService()
+                    binding.fab.rotateTo180()
 
                 } else {
+
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.RECORD_AUDIO),
-                        REQUEST_PERMISSION_READ_EXTERNAL_STORAGE_CODE + 1
-                    );
+                        REQUEST_PERMISSION_RECORD
+                    )
+
                 }
             } else {
-                if (recorder != null) {
-                    binding.fab.animate().setDuration(200).rotation(0f)
-                    stopRecording()
-//                    val uri: Uri = Uri.parse(file.absolutePath)
-//                    val mmr = MediaMetadataRetriever()
-//                    mmr.setDataSource(application, uri)
-//                    val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-//                    val millSecond = durationStr!!
 
-
-                }
+                stopRecording()
 
             }
-
         }
-        viewModel.isNameSet.observe(this) {
+        recorderViewModel.serviceConnected.observe(this) {
+            if (it && voiceListViewModel.onRecording.value != true) {
+                stopRecording()
+            }
+        }
+        voiceListViewModel.isSyncSuccess.observe(this) {
+            if (it)
+                showSnackBar(R.string.sync_ok)
+        }
+        voiceListViewModel.isSyncError.observe(this) {
             if (it) {
-                val note = VoiceNote(
-                    name = voiceFilePath,
-                    path = fullVoiceFilePath,
-                    duration = "",
-                    date = date
-                )
-                viewModel.saveVoiceData(note)
+                showSnackBar(R.string.sync_error)
+                voiceListViewModel.setSyncError(false)
             }
         }
-        viewModel.isSyncSuccess.observe(this){
-            if (it)
-            Toast.makeText(this, "Синхронизация успешна", Toast.LENGTH_SHORT).show()
+        recorderViewModel.toastMsg.observe(this) {
+             showSnackBar(it)
         }
-        viewModel.isSyncError.observe(this){
-            if (it)
-            Toast.makeText(this, "Синхронизация не удалась", Toast.LENGTH_SHORT).show()
+        recorderViewModel.recordingAudio.observe(this) {
+            it?.let {
+                voiceListViewModel.saveVoiceData(it)
+            }
         }
     }
 
+    private fun stopRecording() {
+        recorderViewModel.stopRecordingAndService()
+        recorderViewModel.recordingAudio.value?.fileName?.let { name ->
+            showEditNameDialog(name)
+            binding.fab.rotateToDefault()
+        }
+    }
+
+    private fun showSnackBar(it: Int) {
+        val snack = Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG)
+        snack.setAction("ОК") {
+            snack.dismiss()
+        }
+        snack.show()
+    }
+
     override fun toggleNote(note: VoiceNote, voiceNotes: List<VoiceNote>) {
-        viewModel.toggleNote(note)
-//        toggle(viewModel.playlistData.value as MutableList<AbstractAudio>, note)
+        voiceListViewModel.toggleNote(note)
     }
 
     override fun removeNoteItem(note: VoiceNote) {
@@ -332,19 +277,10 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 
     private fun removeAudioFromList(note: VoiceNote) {
         audioPlayerViewModel.stop()
-        viewModel.removeItemFromList(note)
-    }
-
-    private fun isReadPhoneStatePermissionGranted(): Boolean {
-        val firstPermissionResult = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        )
-        return firstPermissionResult == PackageManager.PERMISSION_GRANTED
+        voiceListViewModel.removeItemFromList(note)
     }
 
     private fun isRecordPermissionGranted(): Boolean {
-
         val firstPermissionResult = ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.RECORD_AUDIO
@@ -354,7 +290,7 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
-//            val snItem = menu?.findItem(R.id.action_social_network)
+        //val snItem = menu?.findItem(R.id.action_social_network)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -376,7 +312,7 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                 // User passed authorization
                 Log.i(TAG, "onLogin: success")
 
-                viewModel.syncVK()
+                voiceListViewModel.syncVK()
 
             }
 
@@ -389,7 +325,14 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         }
     }
 
-    companion object {
-        private val TAG = VoiceListActivity::class.java.name
+    private fun isMyServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
+
 }

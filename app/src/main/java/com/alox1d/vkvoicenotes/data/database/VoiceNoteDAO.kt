@@ -31,6 +31,6 @@ interface VoiceNoteDAO {
     fun loadOneByNoteName(name: String): Single<VoiceNoteDTO?>
 
     @Update
-    fun update(note: VoiceNoteDTO): Completable
+    fun update(note: VoiceNoteDTO): Maybe<Int>
 
 }

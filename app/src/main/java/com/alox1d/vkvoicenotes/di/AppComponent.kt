@@ -4,6 +4,7 @@ import android.app.Application
 import com.alox1d.vkvoicenotes.App
 import com.alox1d.vkvoicenotes.presentation.screen.VoiceListActivity
 import com.alox1d.vkvoicenotes.presentation.viewmodel.VoiceListViewModel
+import com.android.musicplayer.domain.usecase.*
 import com.android.musicplayer.domain.usecase.DeleteNoteUseCase
 import com.android.musicplayer.domain.usecase.GetNotesUseCase
 import com.android.musicplayer.domain.usecase.SaveNoteDataUseCase
@@ -22,6 +23,9 @@ interface AppComponent {
     fun inject(saveNoteDataUseCase: SaveNoteDataUseCase)
     fun inject(getNotesUseCase: GetNotesUseCase)
     fun inject(syncNotesUseCase: SyncNotesUseCase)
+    fun inject(updateNoteDataUseCase: UpdateNoteDataUseCase)
+
+    fun inject(application: App)
 
     @Component.Builder
     interface Builder {
@@ -31,6 +35,4 @@ interface AppComponent {
 
         fun build(): AppComponent
     }
-
-    fun inject(application: App)
 }
