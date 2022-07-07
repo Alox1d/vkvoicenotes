@@ -4,6 +4,10 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+            maven {
+                url = "https://artifactory-external.vkpartner.ru/artifactory/superappkit-maven-public/"
+
+            }
     }
 
     dependencies {

@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
@@ -36,8 +35,11 @@ import com.google.android.material.snackbar.Snackbar
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKAccessToken
 import com.vk.api.sdk.auth.VKAuthCallback
-import com.vk.api.sdk.auth.VKScope
 import com.vk.api.sdk.exceptions.VKAuthException
+import com.vk.auth.api.models.AuthResult
+import com.vk.auth.main.VkClientAuthCallback
+import com.vk.auth.main.VkClientAuthLib
+import com.vk.auth.oauth.VkOAuthConnectionResult
 
 
 class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
@@ -51,9 +53,20 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
     private val voiceListViewModel: VoiceListViewModel by viewModels()
     private val recorderViewModel: RecorderViewModel by viewModels()
 
+    private val authCallback = object : VkClientAuthCallback {
+        override fun onAuth(authResult: AuthResult) {
+            showSnackBar(R.string.sync_ok)
+        }
+
+        override fun onOAuthConnectResult(result: VkOAuthConnectionResult) {
+            super.onOAuthConnectResult(result)
+            showSnackBar(R.string.sync_error)
+
+        }
+    }
+
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-
         val extras = intent?.extras
         if (extras != null || extras?.containsKey(RecordingAudio::class.java.name) != true) {
             voiceListViewModel.setRecordState(true)
@@ -79,9 +92,10 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
 //        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         setUpRecyclerView()
-        observeLiveData()
+        setupLiveData()
         setUpTitle()
         setUpListeners()
+        VkClientAuthLib.addAuthCallback(authCallback)
     }
 
     override fun onStart() {
@@ -104,9 +118,9 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
     }
 
     private fun setUpListeners() {
-        binding.fab.setOnClickListener {
-            voiceListViewModel.onToggleRecord()
-        }
+//        binding.fab.setOnClickListener {
+//            voiceListViewModel.onToggleRecord()
+//        }
     }
 
     private fun setUpTitle() {
@@ -171,7 +185,7 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         }
     }
 
-    private fun observeLiveData() {
+    private fun setupLiveData() {
         audioPlayerViewModel.isPlayData.observe(this) {
             voiceListViewModel.setNotePlayStatus(it)
 //            mAdapterVoiceNotes.playingViewHolder?.itemBinding?.playButton?.setImageResource(
@@ -189,7 +203,7 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
                 if (isRecordPermissionGranted()) {
 
                     recorderViewModel.startAndBindRecordingService()
-                    binding.fab.rotateTo180()
+//                    binding.fab.rotateTo180()
 
                 } else {
 
@@ -235,7 +249,7 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         recorderViewModel.stopRecordingAndService()
         recorderViewModel.recordingAudio.value?.fileName?.let { name ->
             showEditNameDialog(name)
-            binding.fab.rotateToDefault()
+//            binding.fab.rotateToDefault()
         }
     }
 
@@ -298,7 +312,10 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         val id = item.itemId
         when (id) {
             R.id.action_social_network -> {
-                VK.login(this, arrayListOf(VKScope.DOCS, VKScope.AUDIO))
+
+
+            //Old Functionality
+            //VK.login(this, arrayListOf(VKScope.DOCS, VKScope.AUDIO))
                 return true
             }
         }
@@ -323,6 +340,11 @@ class VoiceListActivity : BaseSongPlayerActivity(), OnVoiceListAdapterListener {
         if (data == null || !VK.onActivityResult(requestCode, resultCode, data, callback)) {
             super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    override fun onDestroy() {
+        VkClientAuthLib.removeAuthCallback(authCallback)
+        super.onDestroy()
     }
 
     private fun isMyServiceRunning(serviceClass: Class<*>): Boolean {

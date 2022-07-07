@@ -6,7 +6,13 @@
     android:layout_height="match_parent"
     android:background="?android:colorPrimary"
     tools:context=".presentation.screen.VoiceListActivity">
-
+    <com.vk.auth.ui.fastloginbutton.VkFastLoginButton
+        android:id="@+id/fast_login_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_anchor="@id/recycler_view"
+        app:layout_anchorGravity="top|center"
+        android:layout_marginHorizontal="30dp"/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
@@ -18,14 +24,4 @@
        />
 
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        style="@style/Widget.MaterialComponents.FloatingActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        app:tint="@null"
-        app:layout_anchor="@id/recycler_view"
-        app:layout_anchorGravity="bottom|center"
-        app:srcCompat="@drawable/ic_baseline_keyboard_voice_24" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -13,5 +13,6 @@
     <string name="recordings_folder_name">Recordings</string>
     <string name="notification_channel_description_recorder">Запись</string>
     <string name="sync_ok">Синхронизация успешна</string>
+    <string name="auth_ok">Авторизация успешна</string>
     <string name="sync_error">Синхронизация не удалась</string>
 </resources>
